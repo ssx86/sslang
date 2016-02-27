@@ -8,7 +8,7 @@
 
 //test
 
-std::istream* GetInput(int argc, char* argv[])
+std::istream& GetInput(int argc, char* argv[])
 {
     std::istream* p_input_stream = NULL;
     //parse shell arguments
@@ -25,12 +25,15 @@ std::istream* GetInput(int argc, char* argv[])
         p_input_stream = &std::cin;
     }
 
-    std::istream& input = *p_input_stream;
+    return *p_input_stream;
 }
 
 int main(int argc, char* argv[])
 {
-    std::istream* input = GetInput(argc, argv);
+    std::istream& input = GetInput(argc, argv);
+    std::string s;
+    while(input >> s)
+        std::cout << s;
     Token token(1);
     Token token1(Token::L_PAREN);
     Token token2(Token::STRING, std::string("hehe"));
