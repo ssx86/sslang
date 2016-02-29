@@ -40,7 +40,8 @@ class Token
 
         Type type;
 
-    private:
+//    private:
+    public:
         Token();
 
         int           ivalue;
