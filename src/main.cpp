@@ -42,7 +42,8 @@ int main(int argc, char* argv[])
     if(!ret)
         return 1;
     while(Token* token = parser.GetToken())
-        std::cout << std::endl << token->ivalue;
+        std::cout << char(token->ivalue);
+    std::cout << std::endl;
 
     return 0;
 }

@@ -14,12 +14,17 @@ class Parser
     private:
         bool next();
 
-        char LookAhead1();
-        char LookAhead2();
+        char lookAhead1();
+        char lookAhead2();
+        
+        enum{
+            OPENED,
+            CLOSED
+        } m_input_status;
        
     private:
-        std::istream* input;
-        char ahead[2];
+        std::istream* m_input;
+        char m_ahead[2];
 };
 
 #endif
