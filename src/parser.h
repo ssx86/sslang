@@ -1,5 +1,5 @@
 #ifndef _SSLANG_PARSER_H_
-#ifndef _SSLANG_PARSER_H_
+#define _SSLANG_PARSER_H_
 
 class Token;
 
@@ -12,6 +12,6 @@ class Parser
         char LookAhead2();
     private:
         char ahead[2];
-}
+};
 
 #endif
