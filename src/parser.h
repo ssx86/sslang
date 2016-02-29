@@ -16,15 +16,10 @@ class Parser
 
         char lookAhead1();
         char lookAhead2();
-        
-        enum{
-            OPENED,
-            CLOSED
-        } m_input_status;
        
     private:
         std::istream* m_input;
-        char m_ahead[2];
+        char m_lookAhead[2];
 };
 
 #endif

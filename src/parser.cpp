@@ -8,45 +8,51 @@
 Parser::Parser(std::istream* _input)
 {
     m_input = _input;
+	m_lookAhead[0] = 0;
+	m_lookAhead[1] = 0;
 }
 
 
 Token* Parser::GetToken()
 {
-    if (!next())
+	if (lookAhead1() == 0)
         return NULL;
-    Token* token = new Token(lookAhead2());
+
+    Token* token = new Token(lookAhead1());
+
+	next();
     return token;
 }
 
 bool Parser::Init()
 {
     // read 2 charactors
-    if( !(next() && next()) )
-    {
+	if( !( *m_input >> m_lookAhead[0] >> m_lookAhead[1]) )
+	{
          std::cerr << "input too short";
          return false;
     }
-    m_input_status = OPENED;
     return true;
 }
 
 bool Parser::next()
 {
-    if( !((*m_input) >> m_ahead[1]) )
+	m_lookAhead[0] = m_lookAhead[1];
+	if( !((*m_input) >> m_lookAhead[1]) )
     {
-        m_input_status = CLOSED;
+		m_lookAhead[1] = 0;
         return false;
     }
     return true;
 }
 
+
 char Parser::lookAhead1()
 {
-    return m_ahead[0];
+    return m_lookAhead[0];
 }
 
 char Parser::lookAhead2()
 {
-    return m_ahead[1];
+	return m_lookAhead[1];
 }
