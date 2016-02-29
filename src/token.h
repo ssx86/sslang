@@ -11,6 +11,7 @@ class Token
             ID,
             INT,
             DOUBLE,
+			EQ,			   // =
             ADD,           // +
             SUB,           // -
             MUL,           // *
@@ -38,16 +39,17 @@ class Token
 
         ~Token();
 
-        Type type;
+        Type m_type;
 
 //    private:
     public:
         Token();
 
+		std::string tostring();
+
         int           ivalue;
         double        dvalue;
         std::string   svalue;
-        char          c;
 
 };
 

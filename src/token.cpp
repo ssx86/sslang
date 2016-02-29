@@ -5,21 +5,62 @@ Token::Token()
 }
 
 Token::Token(Type _type)
-    : type(_type)
+	: m_type(_type)
 {}
 Token::Token(int value)
-    : type(Token::INT)
+	: m_type(INT)
 {
-    ivalue = value;
+	ivalue = value;
 }
 Token::Token(double value)
-    : type(Token::DOUBLE)
+	: m_type(DOUBLE)
 {
-    dvalue = value;
+	dvalue = value;
 }
 Token::Token(Type _type, const std::string &value)
-    : type(_type), svalue(value)
+	: m_type(_type), svalue(value)
 {}
 
 Token::~Token()
 {}
+
+std::string Token::tostring()
+{
+	switch(m_type){
+	case ID:
+		{
+			return std::string("<id, ") + svalue + ">";
+		}
+	case STRING:
+		{
+			return std::string("<string, ") + svalue + ">";
+		}
+	case INT:
+		{
+			char buff[100];
+			sprintf(buff, "<int, %d>", ivalue);
+			return std::string(buff);
+		}
+	case DOUBLE:
+		{
+			char buff[100];
+			sprintf(buff, "<double, %lf>", dvalue);
+			return std::string(buff);
+		}
+	case EQ:
+		return "<=>";
+	case ADD:
+		return "<+>";
+	case SUB:
+		return "<->";
+	case MUL:
+		return "<*>";
+	case DIV:
+		return "</>";
+
+	default:
+		{
+			return "<symbol>";
+		}
+	}
+}

@@ -33,16 +33,13 @@ int main(int argc, char* argv[])
 {
     std::istream* input = GetInput(argc, argv);
     std::string s;
-    Token token(1);
-    Token token1(Token::L_PAREN);
-    Token token2(Token::STRING, std::string("hehe"));
 
     Parser parser(input);
     bool ret = parser.Init();
     if(!ret)
         return 1;
     while(Token* token = parser.GetToken())
-        std::cout << char(token->ivalue);
+        std::cout << token->tostring() << std::endl;
     std::cout << std::endl;
 
     return 0;
