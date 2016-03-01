@@ -16,6 +16,8 @@ class Parser
 
         char lookAhead1();
         char lookAhead2();
+
+        void skipSpace();
        
     private:
         std::istream* m_input;

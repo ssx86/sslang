@@ -7,29 +7,36 @@ class Token
 {
     public:
         typedef enum{
+            NEWLINE,       // \n
             STRING,
             ID,
             INT,
             DOUBLE,
-			EQ,			   // =
-            ADD,           // +
-            SUB,           // -
-            MUL,           // *
-            DIV,           // /
-            AND,           // &
-            OR,            // |
-            BIT_AND,       // &&
-            BIT_OR,        // ||
-            NOT,           // !
-            INVERSION,     // ~
-            PERCENT,       // %
-            BACKSLASH,      
-            L_PAREN,       // (
-            R_PAREN,       // )
-            L_BRACE,       // {
-            R_BRACE,       // }
-            L_BRACKET,     // [
-            R_BRACKET,     // ]
+			EQ,        // ==
+            ADD,       // +
+            SUB,       // -
+            MUL,       // *
+            DIV,       // /
+
+			ASSIGN,    // =
+            GT,        // >
+            GE,        // >=
+            LT,        // <
+            LE,        // <=
+            NE,        // !=
+            AND,       // &
+            OR,        // |
+            BIT_AND,   // &&
+            BIT_OR,    // ||
+            NOT,       // !
+            PERCENT,   // %
+            BACKSLASH, // 
+            LP,        // (
+            RP,        // )
+            LB,        // {
+            RB,        // }
+            LBRACKET,  // [
+            RBRACKET,  // ]
         }Type;
 
         Token(Type _type);

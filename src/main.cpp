@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     if(!ret)
         return 1;
     while(Token* token = parser.GetToken())
-        std::cout << token->tostring() << std::endl;
+        std::cout << token->tostring();
     std::cout << std::endl;
 
     return 0;
