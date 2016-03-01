@@ -9,6 +9,7 @@ Parser::Parser(Lexer* lexer) {
 }
 
 bool Parser::next() {
+	return false;
 }
 
 

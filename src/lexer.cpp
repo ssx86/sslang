@@ -14,10 +14,10 @@ Lexer::Lexer(std::istream* _input) {
 }
 
 void Lexer::skipSpace(){
-    char c = lookAhead1();
+    char c = current();
     while(c == ' ' || c == '\t') {
         next();
-        c = lookAhead1();
+        c = current();
     }
 }
 
@@ -31,17 +31,13 @@ Token* Lexer::GetToken() {
 
     if (isalpha(c)) {
         std::stringstream ss;
-        ss << c;
-        char next_c;
         while(true) {
             ss << c;
-            next_c = lookAhead1();
-            if( isalpha(next_c) || isdigit(next_c) ) {
-                next();
-                c = current();
+			next();
+            c = current();
+            if( !(isalpha(c) || isdigit(c) )) {
+				break;
             }
-            else
-                break;
         }
         std::string str;
         ss >> str;
@@ -51,18 +47,16 @@ Token* Lexer::GetToken() {
         std::stringstream ss;
         while(true) {	
             ss << c;
-
-            char next_c = lookAhead1();
-            if (match_point && next_c == '.') { // 1.2.3
+			next();
+            c = current();
+            if (match_point && c == '.') { // 1.2.3
                 break;
             }
             
-            if (isdigit(next_c) || next_c == '.') {
+            if (isdigit(c) || c == '.') {
                 if ( c == '.' ) {
                     match_point = true;
                 }
-                next();
-                c = current();
             }
             else
                 break;
@@ -81,7 +75,7 @@ Token* Lexer::GetToken() {
         next();
         switch (c) {
             case '=': 
-                if ('=' == current() ) {
+				if ('=' == current() ) {
                     next();
                     return new Token(Token::EQ);
                 } else {
@@ -118,9 +112,9 @@ Token* Lexer::GetToken() {
 }
 
 bool Lexer::Init() {
-    if (!m_input->get(m_current) 
+    if (!(m_input->get(m_current) 
             && m_input->get(m_lookAhead[0])
-            && m_input->get(m_lookAhead[1])) {
+            && m_input->get(m_lookAhead[1]))) {
         std::cerr << "input too short";
         return false;
     }else{
