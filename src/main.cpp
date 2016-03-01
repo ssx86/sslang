@@ -4,7 +4,7 @@
 //test
 
 #include "token.h"
-#include "parser.h"
+#include "lexer.h"
 
 
 //test
@@ -34,11 +34,11 @@ int main(int argc, char* argv[])
     std::istream* input = GetInput(argc, argv);
     std::string s;
 
-    Parser parser(input);
-    bool ret = parser.Init();
+    Lexer lexer(input);
+    bool ret = lexer.Init();
     if(!ret)
         return 1;
-    while(Token* token = parser.GetToken())
+    while(Token* token = lexer.GetToken())
         std::cout << token->tostring();
     std::cout << std::endl;
 

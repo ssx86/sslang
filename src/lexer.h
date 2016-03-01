@@ -4,10 +4,10 @@
 #include <istream>
 class Token;
 
-class Parser
+class Lexer
 {
     public:
-        Parser(std::istream* _input);
+        Lexer(std::istream* _input);
         bool Init();
         Token* GetToken();
 

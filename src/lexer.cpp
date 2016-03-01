@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "lexer.h"
 #include "token.h"
 
 // delete
@@ -6,13 +6,13 @@
 #include <sstream>
 // delete
 
-Parser::Parser(std::istream* _input) {
+Lexer::Lexer(std::istream* _input) {
     m_input = _input;
     m_lookAhead[0] = 0;
     m_lookAhead[1] = 0;
 }
 
-void Parser::skipSpace(){
+void Lexer::skipSpace(){
     char c = lookAhead1();
     while(c == ' ' || c == '\t') {
         next();
@@ -20,7 +20,7 @@ void Parser::skipSpace(){
     }
 }
 
-Token* Parser::GetToken() {
+Token* Lexer::GetToken() {
     skipSpace();
 
     char c = lookAhead1();
@@ -112,7 +112,7 @@ Token* Parser::GetToken() {
 
 }
 
-bool Parser::Init() {
+bool Lexer::Init() {
     // read 2 charactors
     if( !( *m_input >> m_lookAhead[0] >> m_lookAhead[1]) ) {
         std::cerr << "input too short";
@@ -121,7 +121,7 @@ bool Parser::Init() {
     return true;
 }
 
-bool Parser::next() {
+bool Lexer::next() {
     m_lookAhead[0] = m_lookAhead[1];
     if( !( m_input->get(m_lookAhead[1]) )) {
         m_lookAhead[1] = 0;
@@ -131,10 +131,10 @@ bool Parser::next() {
 }
 
 
-char Parser::lookAhead1() {
+char Lexer::lookAhead1() {
     return m_lookAhead[0];
 }
 
-char Parser::lookAhead2() {
+char Lexer::lookAhead2() {
     return m_lookAhead[1];
 }
