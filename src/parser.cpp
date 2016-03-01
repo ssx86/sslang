@@ -44,20 +44,34 @@ Token* Parser::GetToken() {
         ss >> str;
         return new Token(Token::ID, str);
     } else if ( isdigit(c) ) {
-        next();
-        int n = c - '0';
+        bool match_point = false; // matched "."
+        std::stringstream ss;
         while(true) {	
             c = lookAhead1();
-            if (isdigit(c)) {
-                n = n * 10 + c - '0';
+            if (match_point && c == '.') { // 1.2.3
+                break;
+            }
+            
+            if (isdigit(c) || c == '.') {
+                if ( c == '.' ) {
+                    match_point = true;
+                }
+                ss << c;
                 next();
             }
             else
                 break;
         }
+        if(match_point) {
+            double n;
+            ss >> n;
+            return new Token(n);
+        } else {
+            int n;
+            ss >> n;
+            return new Token(n);
+        }
 
-        Token* token = new Token(n);
-        return token;
     } else {
         next();
         switch (c) {
