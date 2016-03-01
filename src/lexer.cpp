@@ -3,8 +3,9 @@
 
 // delete
 #include <iostream>
-#include <sstream>
 // delete
+
+#include <sstream>
 
 Lexer::Lexer(std::istream* _input) {
     m_input = _input;
@@ -20,22 +21,24 @@ void Lexer::skipSpace(){
     }
 }
 
+
 Token* Lexer::GetToken() {
     skipSpace();
 
-    char c = lookAhead1();
+    char c = current();
     if (c == 0)
         return NULL;
 
     if (isalpha(c)) {
-        next();
         std::stringstream ss;
         ss << c;
+        char next_c;
         while(true) {
-            c = lookAhead1();
-            if( isalpha(c) ) {
-                ss << c;
+            ss << c;
+            next_c = lookAhead1();
+            if( isalpha(next_c) || isdigit(next_c) ) {
                 next();
+                c = current();
             }
             else
                 break;
@@ -47,17 +50,19 @@ Token* Lexer::GetToken() {
         bool match_point = false; // matched "."
         std::stringstream ss;
         while(true) {	
-            c = lookAhead1();
-            if (match_point && c == '.') { // 1.2.3
+            ss << c;
+
+            char next_c = lookAhead1();
+            if (match_point && next_c == '.') { // 1.2.3
                 break;
             }
             
-            if (isdigit(c) || c == '.') {
+            if (isdigit(next_c) || next_c == '.') {
                 if ( c == '.' ) {
                     match_point = true;
                 }
-                ss << c;
                 next();
+                c = current();
             }
             else
                 break;
@@ -76,7 +81,7 @@ Token* Lexer::GetToken() {
         next();
         switch (c) {
             case '=': 
-                if ('=' == lookAhead1()) {
+                if ('=' == current() ) {
                     next();
                     return new Token(Token::EQ);
                 } else {
@@ -113,23 +118,27 @@ Token* Lexer::GetToken() {
 }
 
 bool Lexer::Init() {
-    // read 2 charactors
-    if( !( *m_input >> m_lookAhead[0] >> m_lookAhead[1]) ) {
+    if (!m_input->get(m_current) 
+            && m_input->get(m_lookAhead[0])
+            && m_input->get(m_lookAhead[1])) {
         std::cerr << "input too short";
         return false;
+    }else{
+        return true;
     }
-    return true;
 }
 
-bool Lexer::next() {
+void Lexer::next() {
+    m_current = m_lookAhead[0];
     m_lookAhead[0] = m_lookAhead[1];
     if( !( m_input->get(m_lookAhead[1]) )) {
         m_lookAhead[1] = 0;
-        return false;
     }
-    return true;
 }
 
+char Lexer::current(){
+    return m_current;
+}
 
 char Lexer::lookAhead1() {
     return m_lookAhead[0];

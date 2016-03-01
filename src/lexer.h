@@ -12,8 +12,9 @@ class Lexer
         Token* GetToken();
 
     private:
-        bool next();
+        void next();
 
+        char current();
         char lookAhead1();
         char lookAhead2();
 
@@ -22,6 +23,7 @@ class Lexer
     private:
         std::istream* m_input;
         char m_lookAhead[2];
+        char m_current;
 };
 
 #endif
