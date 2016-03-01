@@ -29,7 +29,7 @@ std::string Token::tostring() {
         case NEWLINE:
             return "\n";
         case ID:
-            return std::string("<id, ") + svalue + ">";
+            return std::string("<") + svalue + ">";
         case STRING:
             return std::string("'") + svalue + "'";
         case INT:
@@ -62,6 +62,10 @@ std::string Token::tostring() {
             return "+";
         case SUB:
             return "-";
+		case SELF_ADD:
+			return "++";
+		case SELF_SUB:
+			return "--";
         case MUL:
             return "*";
         case DIV:
@@ -78,6 +82,15 @@ std::string Token::tostring() {
             return "[";
         case RBRACKET:
             return "]";
+		case COMMA:
+			return ",";
+		case COLON:
+			return ":";
+		case SEMICOLON:
+			return ";";
+		case COMMENT:
+			return "//";
+
 
         default:
             return "<symbol>";

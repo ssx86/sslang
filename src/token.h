@@ -17,7 +17,9 @@ class Token
             SUB,       // -
             MUL,       // *
             DIV,       // /
-
+			SELF_ADD,  // ++
+			SELF_SUB,  // --
+			COMMENT,   // //
 			ASSIGN,    // =
             GT,        // >
             GE,        // >=
@@ -37,6 +39,9 @@ class Token
             RB,        // }
             LBRACKET,  // [
             RBRACKET,  // ]
+			COMMA,     // ,
+			COLON,     // :
+			SEMICOLON  // ;
         }Type;
 
         Token(Type _type);

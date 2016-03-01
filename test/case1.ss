@@ -1,9 +1,19 @@
-a9 =1+3
-bca = a-5*4.3
-c=9.63034
-d=0.63034
-b+=16
-def fib(a)
+a = 1
+b = 'Hello world'
+i_1 = 9.0
+d = a + b
+d = a - b
+d = a * b
+d = a / b
+a++
+b--
+
+//this is a comment
+
+arr = [1, 2, 3, "ff"]
+arr[0] = 4
+
+func fib(a)
   if a == 1 or a == 2 then 
     return 1
   else
@@ -11,10 +21,15 @@ def fib(a)
   end
 end
 
-for i = 1 to 5  1 do 
+for i = 1 to 5, 1 do 
 	f = fib(i)
 	print(f)
 end
+
+while i < 10 do 
+  print("fuck")
+end
+
 lambda(x, y) -> {
   return x + y;
 }
