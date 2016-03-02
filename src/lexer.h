@@ -1,5 +1,5 @@
-#ifndef _SSLANG_PARSER_H_
-#define _SSLANG_PARSER_H_
+#ifndef _SSLANG_LEXER_H_
+#define _SSLANG_LEXER_H_
 
 #include <istream>
 class Token;

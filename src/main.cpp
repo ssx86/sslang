@@ -3,8 +3,9 @@
 
 //test
 
-#include "token.h"
 #include "lexer.h"
+#include "token.h"
+#include "parser.h"
 
 
 //test
@@ -34,13 +35,17 @@ int main(int argc, char* argv[])
     std::istream* input = GetInput(argc, argv);
     std::string s;
 
-    Lexer lexer(input);
-    bool ret = lexer.Init();
+    Lexer *pLexer = new Lexer(input);
+    bool ret = pLexer->Init();
     if(!ret)
         return 1;
-    while(Token* token = lexer.GetToken())
-        std::cout << token->tostring();
-    std::cout << std::endl;
+    Parser parser(pLexer);
+    ASTNode* hehe = parser.Parse();
+    if (hehe)
+        hehe->eval();
+    //while(Token* token = lexer.GetToken())
+        //std::cout << token->tostring();
+    //std::cout << std::endl;
 
     return 0;
 }
