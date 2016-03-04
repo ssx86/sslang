@@ -2,6 +2,7 @@
 #define _SSLANG_PARSER_H_
 
 #include <cstddef>
+#include <vector>
 
 class Lexer;
 class Token;
@@ -9,10 +10,12 @@ class Token;
 class ASTNode{
     public:
         Token* op;
-        ASTNode* next;
-    public:
-        void eval();
+        ASTNode* children(int i);
+        void addChild(ASTNode* child);
 
+    public:
+        std::vector<ASTNode*> m_children;
+        void eval();
 };
 
 

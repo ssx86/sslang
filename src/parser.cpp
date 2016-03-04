@@ -4,10 +4,18 @@
 
 #include <iostream>
 
+void ASTNode::addChild(ASTNode* child) {
+    m_children.push_back(child);
+}
+
+ASTNode* ASTNode::children(int i) {
+    return m_children[i];
+}
+
 void ASTNode::eval() {
     std::cout << this->op->tostring();
-    if (next) {
-        next->eval();
+    if (m_children.size() > 0) {
+        children(0)->eval();
     }
 }
 
@@ -46,8 +54,9 @@ ASTNode* Parser::Parse() {
     while(lookAhead1())
     {
         next();
-        node->next = new ASTNode;
-        node = node->next;
+        ASTNode *child = new ASTNode;
+        node->addChild(child);       
+        node = node->children(0);
         node->op = current();
     }
     //m_root = chunk();
