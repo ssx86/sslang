@@ -128,6 +128,22 @@ Token* Lexer::GetToken() {
 			} else {
 				return new Token(Token::DIV);
 			}
+        case '|':
+            if ('|' == current() ) {
+                next();
+                return new Token(Token::OR);
+            } else {
+                return new Token(Token::BIT_OR);
+            }
+        case '&':
+            if ('&' == current() ) {
+                next();
+                return new Token(Token::AND);
+            } else {
+                return new Token(Token::BIT_AND);
+            }
+        case '^':
+            return new Token(Token::XOR);
 		case '*': 
 			return new Token(Token::MUL);
 		case '\n': 

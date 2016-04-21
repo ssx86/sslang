@@ -5,6 +5,11 @@ d = a + b
 d = a - b
 d = a * b
 d = a / b
+d = a ^ b
+d = a | b
+d = a || b
+d = a && b
+d = a & b
 a++
 b--
 
@@ -30,9 +35,12 @@ while i < 10 do
   print("fuck")
 end
 
-lambda(x, y) -> {
+fun(x, y){
   return x + y;
 }
   
+fun name(x, y){
+  return x * y;
+}
 
 

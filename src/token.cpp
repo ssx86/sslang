@@ -58,6 +58,16 @@ std::string Token::tostring() {
             return "<=";
         case NE:
             return "!=";
+        case AND:
+            return "&&";
+        case BIT_AND:
+            return "&";
+        case OR:
+            return "||";
+        case BIT_OR:
+            return "|";
+        case XOR:
+            return "^";
         case ADD:
             return "+";
         case SUB:

@@ -26,10 +26,11 @@ class Token
             LT,        // <
             LE,        // <=
             NE,        // !=
-            AND,       // &
-            OR,        // |
-            BIT_AND,   // &&
-            BIT_OR,    // ||
+            BIT_AND,   // &
+            BIT_OR,    // |
+            XOR,       // ^
+            AND,       // &&
+            OR,        // ||
             NOT,       // !
             PERCENT,   // %
             BACKSLASH, // 

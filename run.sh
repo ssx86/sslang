@@ -1,5 +1,5 @@
 make &&
-echo "-----------case1------------" &&
-./sslang ./test/case1.ss &&
+echo "-----------syntax------------" &&
+./sslang ./test/syntax.ss &&
 echo "-----------case2------------" &&
-./sslang ./test/case2.ss
+./sslang ./test/tooshort.ss
