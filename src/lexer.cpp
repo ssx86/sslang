@@ -84,6 +84,8 @@ Token* Lexer::GetToken() {
 	} else {
 		next();
 		switch (c) {
+        case '.':
+            return new Token(Token::DOT);
 		case '=': 
 			if ('=' == current() ) {
 				next();
@@ -204,3 +206,4 @@ char Lexer::lookAhead1() {
 char Lexer::lookAhead2() {
 	return m_lookAhead[1];
 }
+

@@ -12,6 +12,7 @@ class Token
             ID,
             INT,
             DOUBLE,
+            DOT,       // .
 			EQ,        // ==
             ADD,       // +
             SUB,       // -
@@ -50,6 +51,9 @@ class Token
         Token(double value);
         Token(Type _type, const std::string &value); //for ID and STRING
 
+        bool isKeyword();
+
+
         ~Token();
 
         Type m_type;
@@ -63,6 +67,7 @@ class Token
         int           ivalue;
         double        dvalue;
         std::string   svalue;
+
 
 };
 

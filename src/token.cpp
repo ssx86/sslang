@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <iostream>
 
+const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import"};
+
 Token::Token() {
 }
 
@@ -24,12 +26,28 @@ Token::~Token()
 {
 }
 
+bool Token::isKeyword() {
+    if( m_type != ID )
+        return false;
+
+    for(int i = 0; i < sizeof(KEYWORDS) / sizeof(const char*); i++)
+    {
+        if (svalue == KEYWORDS[i])
+            return true;
+    }
+
+    return false;
+}
+
 std::string Token::tostring() {
     switch(m_type){
         case NEWLINE:
             return "\n";
         case ID:
-            return std::string("<") + svalue + ">";
+            if ( isKeyword( ) )
+                return std::string("<KEY:") + svalue + ">";
+            else
+                return std::string("<") + svalue + ">";
         case STRING:
             return std::string("'") + svalue + "'";
         case INT:
@@ -44,6 +62,8 @@ std::string Token::tostring() {
                 sprintf(buff, "%lf", dvalue);
                 return std::string(buff);
             }
+        case DOT:
+            return ".";
         case EQ:
             return "==";
         case ASSIGN:

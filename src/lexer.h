@@ -2,6 +2,8 @@
 #define _SSLANG_LEXER_H_
 
 #include <istream>
+#include <map>
+
 class Token;
 
 class Lexer
@@ -20,10 +22,14 @@ class Lexer
 
         void skipSpace();
        
+        bool is_keyword(std::string&);
+
     private:
         std::istream* m_input;
         char m_lookAhead[2];
         char m_current;
+
+        std::map<std::string, int> m_keyword_map;
 };
 
 #endif

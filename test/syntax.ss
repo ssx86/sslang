@@ -18,6 +18,15 @@ b--
 arr = [1, 2, 3, "ff"]
 arr[0] = 4
 
+class cls 
+  attr a
+  attr b
+end
+
+s = cls.new
+s.a = 9
+s.b = 10
+
 func fib(a)
   if a == 1 or a == 2 then 
     return 1
@@ -43,4 +52,12 @@ fun name(x, y){
   return x * y;
 }
 
+return
+end
+function
+if
+else
+while
+then
+continue
 
