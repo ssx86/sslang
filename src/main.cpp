@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     ASTNode* root = parser.Parse();
 
     if (root)
-        ASTNodeEvaler::eval(root);
+        root->eval();
 
     return 0;
 }

@@ -58,6 +58,10 @@ class Token
 
         Type m_type;
 
+        bool isType(Type t) {
+            return m_type == t;
+        }
+
 //    private:
     public:
         Token();

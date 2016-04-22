@@ -63,7 +63,13 @@ ASTNode* Parser::Parse() {
  * chunk ::= block
  */
 ASTNode* Parser::chunk() {
-    return block();
+    Token* token = current();
+    if (token->isType(Token::SEMICOLON))
+    {
+        next();
+        ASTNode* node = new EmptyNode;
+        return node;
+    }
 }
 
 /*

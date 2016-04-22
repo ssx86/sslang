@@ -4,28 +4,11 @@
 #include <cstddef>
 #include <vector>
 
+#include "node.h"
+
 class Lexer;
 class Token;
 
-class ASTNode{
-    public:
-        Token* op;
-        ASTNode* children(int i);
-        void addChild(ASTNode* child);
-
-    public:
-        std::vector<ASTNode*> m_children;
-};
-
-class Value {
-};
-
-class ASTNodeEvaler{
-    public:
-        static Value* eval(ASTNode* node){
-            return new Value;
-        }
-};
 
 class Parser
 {
