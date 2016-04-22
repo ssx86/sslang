@@ -4,6 +4,18 @@
 
 #include <iostream>
 
+/*
+class ASTNode{
+    public:
+        Token* op;
+        ASTNode* children(int i);
+        void addChild(ASTNode* child);
+
+    public:
+        std::vector<ASTNode*> m_children;
+};
+*/
+
 void ASTNode::addChild(ASTNode* child) {
     m_children.push_back(child);
 }
@@ -11,14 +23,6 @@ void ASTNode::addChild(ASTNode* child) {
 ASTNode* ASTNode::children(int i) {
     return m_children[i];
 }
-
-void ASTNode::eval() {
-    std::cout << this->op->tostring();
-    if (m_children.size() > 0) {
-        children(0)->eval();
-    }
-}
-
 
 Parser::Parser(Lexer* lexer) 
 : m_root(NULL) {
@@ -48,18 +52,10 @@ void Parser::next() {
 }
 
 ASTNode* Parser::Parse() {
-    m_root = new ASTNode;
-    m_root->op = current();
-    ASTNode* node = m_root;
-    while(lookAhead1())
-    {
-        next();
-        ASTNode *child = new ASTNode;
-        node->addChild(child);       
-        node = node->children(0);
-        node->op = current();
+    m_root = new ASTNode();
+    while( ASTNode* block = chunk() ) {
+        m_root->addChild(block);
     }
-    //m_root = chunk();
     return m_root;
 }
 

@@ -15,9 +15,17 @@ class ASTNode{
 
     public:
         std::vector<ASTNode*> m_children;
-        void eval();
 };
 
+class Value {
+};
+
+class ASTNodeEvaler{
+    public:
+        static Value* eval(ASTNode* node){
+            return new Value;
+        }
+};
 
 class Parser
 {

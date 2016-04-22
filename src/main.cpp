@@ -40,12 +40,10 @@ int main(int argc, char* argv[])
     if(!ret)
         return 1;
     Parser parser(pLexer);
-    ASTNode* hehe = parser.Parse();
-    if (hehe)
-        hehe->eval();
-    //while(Token* token = lexer.GetToken())
-        //std::cout << token->tostring();
-    //std::cout << std::endl;
+    ASTNode* root = parser.Parse();
+
+    if (root)
+        ASTNodeEvaler::eval(root);
 
     return 0;
 }
