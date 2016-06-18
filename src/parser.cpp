@@ -52,7 +52,7 @@ void Parser::next() {
 }
 
 ASTNode* Parser::Parse() {
-    m_root = new ASTNode();
+    m_root = new RootNode();
     while( ASTNode* block = chunk() ) {
         m_root->addChild(block);
     }
@@ -63,24 +63,29 @@ ASTNode* Parser::Parse() {
  * chunk ::= block
  */
 ASTNode* Parser::chunk() {
-    Token* token = current();
-    if (token->isType(Token::SEMICOLON))
-    {
-        next();
-        ASTNode* node = new EmptyNode;
-        return node;
-    }
+    return block();
 }
 
 /*
  * block ::= {stat} [retstat]
  */
 ASTNode* Parser::block() {
-    stat();
-    if (false /*TODO: restart */) {
-        retstat();
+    BlockNode* node = new BlockNode;
+    while( ASTNode* stat_node = stat() ) {
+        node->addChild(stat_node);
     }
-    return NULL;
+    if (false) /* TODO: retstat */
+    {
+        RetStatNode* retstat_node = retstat();
+        node->addChild(retstat_node);
+    }
+    if (node->children_count() > 0)
+        return node;
+    else
+    {
+        delete node;
+        return NULL;
+    }
 }
 
 /*
@@ -100,14 +105,19 @@ ASTNode* Parser::block() {
  *      local function Name funcbody | 
  *      local namelist [‘=’ explist] 
  */
-ASTNode* Parser::stat() {
+StatNode* Parser::stat() {
+    if(current()->isType(Token::SEMICOLON))
+    {
+        next();
+        return new EmptyStatNode;
+    }
     return NULL;
 }
 
 /*
  * retstat ::= return [explist] [‘;’]
  */
-ASTNode* Parser::retstat() {
+RetStatNode* Parser::retstat() {
     return NULL;
 }
 
@@ -115,7 +125,7 @@ ASTNode* Parser::retstat() {
 /*
  * label ::= ‘::’ Name ‘::’
 */
-ASTNode* Parser::lable() {
+ASTNode* Parser::label() {
     return NULL;
 }
 

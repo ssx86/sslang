@@ -32,9 +32,9 @@ class Parser
     private:
         ASTNode* chunk() ;
         ASTNode* block() ;
-        ASTNode* stat() ;
-        ASTNode* retstat() ;
-        ASTNode* lable() ;
+        StatNode* stat() ;
+        RetStatNode* retstat() ;
+        ASTNode* label() ;
         ASTNode* funcname() ;
         ASTNode* varlist() ;
         ASTNode* var() ;

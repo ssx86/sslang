@@ -1,3 +1,4 @@
+;
 a = 1
 b = 'Hello world'
 i_1 = 9.0

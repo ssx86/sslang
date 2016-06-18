@@ -7,7 +7,7 @@ class Token
 {
     public:
         typedef enum{
-            NEWLINE,       // \n
+            NEWLINE = 100,       // \n
             STRING,
             ID,
             INT,
