@@ -3,13 +3,22 @@
 
 #include "token.h"
 #include <iostream>
+#include <vector>
 
 class Value {
 };
 
 class ASTNode{
     public:
-        Token* op;
+        //member
+        typedef enum{
+           DUMMY 
+        }Type;
+        Type m_type;
+
+        Token* m_token;
+
+        //children
         ASTNode* children(int i);
         int children_count() {
             return m_children.size();
@@ -17,7 +26,12 @@ class ASTNode{
         void addChild(ASTNode* child);
 
     public:
+        ASTNode(Type type = DUMMY) : m_token(NULL), m_type(type) {}
+        ASTNode(Token* token) {
+            m_token = token;
+        }
         std::vector<ASTNode*> m_children;
+
         virtual Value* eval() {
             Value* val = NULL;
             for(std::vector<ASTNode*>::iterator it =  m_children.begin(); it != m_children.end(); 
@@ -29,24 +43,5 @@ class ASTNode{
         }
 };
 
-class RootNode : public ASTNode {
-};
-
-class BlockNode : public ASTNode {
-};
-
-class StatNode : public ASTNode {
-};
-
-class RetStatNode : public ASTNode {
-};
-
-class EmptyStatNode : public StatNode {
-    public:
-        Value* eval() {
-            std::cout << "here is an empty stat node" << std::endl;
-            return NULL;
-        }
-};
 
 #endif

@@ -26,13 +26,13 @@ class Token
             GE,        // >=
             LT,        // <
             LE,        // <=
-            NE,        // !=
+            NE,        // ~=
             BIT_AND,   // &
             BIT_OR,    // |
             XOR,       // ^
             AND,       // &&
             OR,        // ||
-            NOT,       // !
+            NOT,       // ~
             PERCENT,   // %
             BACKSLASH, // 
             LP,        // (
@@ -43,7 +43,10 @@ class Token
             RBRACKET,  // ]
 			COMMA,     // ,
 			COLON,     // :
-			SEMICOLON  // ;
+			SEMICOLON, // ;
+            SHARP,     // #
+            UNKNOWN
+
         }Type;
 
         Token(Type _type);

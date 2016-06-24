@@ -168,6 +168,10 @@ Token* Lexer::GetToken() {
 			return new Token(Token::COLON);
 		case ';':
 			return new Token(Token::SEMICOLON);
+		case '~':
+			return new Token(Token::NOT);
+		case '#':
+			return new Token(Token::SHARP);
 		default:
 			std::cerr << std::endl << "Unknown charactor: " << c << std::endl;
 			return new Token(c);

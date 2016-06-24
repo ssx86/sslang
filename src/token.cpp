@@ -42,7 +42,7 @@ bool Token::isKeyword() {
 std::string Token::tostring() {
     switch(m_type){
         case NEWLINE:
-            return "\n";
+            return "<NEWLINE>";
         case ID:
             if ( isKeyword( ) )
                 return std::string("<KEY:") + svalue + ">";
@@ -77,7 +77,9 @@ std::string Token::tostring() {
         case LE:
             return "<=";
         case NE:
-            return "!=";
+            return "~=";
+        case NOT:
+            return "~";
         case AND:
             return "&&";
         case BIT_AND:
@@ -120,6 +122,8 @@ std::string Token::tostring() {
 			return ";";
 		case COMMENT:
 			return "//";
+		case SHARP:
+			return "#";
 
 
         default:

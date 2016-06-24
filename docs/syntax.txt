@@ -26,18 +26,44 @@ funcname ::= Name {'.' Name} [':' Name]
 
 varlist ::= var {',' var}
 
+A -> Aa|b
+:
+A -> bA'
+A'-> aA'|nil
+
+
 var ::=  Name | prefixexp '[' exp ']' | prefixexp '.' Name 
+prefixexp ::= var | functioncall | '(' exp ')'
+functioncall ::=  prefixexp args | prefixexp ':' Name args 
 
-namelist ::= Name {',' Name}
+/*
+prefixexp ::= var | prefixexp args | prefixexp : Name args | ( exp ) 
 
-explist ::= exp {',' exp}
+//消除左递归prefixexp:
+prefixexp ::= var `prefixexp  | ( exp ) `prefixexp
+`prefixexp ::= args `prefixexp  | ':' Name args `prefixexp | ""
+
+//带入var
+var ::= Name | var `prefixexp [ exp ] | ( exp ) `prefixexp [ exp ] | var `prefixexp . Name | ( exp ) `prefixexp . Name
+
+
+//消除左递归var
+var ::= Name `var | ( exp ) `prefixexp [ exp ] `var | ( exp ) `prefixexp . Name `var
+`var ::= `prefixexp [ exp ] `var | `prefixexp . Name `var | ""
+prefixexp ::= var `prefixexp  | ( exp ) `prefixexp
+`prefixexp ::= args `prefixexp  | ':' Name args `prefixexp | "" 
+functioncall ::=  prefixexp args | prefixexp ':' Name args 
+
+*/
+
+
 
 exp ::=  nil | false | true | Numeral | LiteralString | '...' | functiondef | 
      prefixexp | tableconstructor | exp binop exp | unop exp 
 
-prefixexp ::= var | functioncall | '(' exp ')'
+namelist ::= Name {',' Name}
 
-functioncall ::=  prefixexp args | prefixexp ':' Name args 
+explist ::= exp {',' exp}
 
 args ::=  '(' [explist] ')' | tableconstructor | LiteralString 
 
