@@ -6,12 +6,14 @@
 #include <iostream>
 
 void Parser::debug_print(std::string str) {
+    std::cout << lineno << ":\t";
     for(int i = 0; i < level; i++)
         std::cout << "  ";
-    std::cout << "[" << current()->tostring() << "] " << str << std::endl;;
+    std::cout << "\t" << "[" << current()->tostring() << "] " << str << std::endl;;
 }
 
 void Parser::enter(std::string str) {
+    std::cout << lineno << ":\t";
     level ++;
     for(int i = 0; i < level; i++)
         std::cout << "  ";
@@ -19,6 +21,7 @@ void Parser::enter(std::string str) {
 }
 
 void Parser::leave() {
+    std::cout << lineno << ":\t";
     for(int i = 0; i < level; i++)
         std::cout << "  ";
     std::cout << "[LEAVE]: "  << current()->tostring() << std::endl;;
@@ -34,7 +37,7 @@ ASTNode* ASTNode::children(int i) {
 }
 
 Parser::Parser(Lexer* lexer) 
-: m_root(NULL), level(-1) {
+: m_root(NULL), level(-1), lineno(1) {
     m_pLexer = lexer;
     m_current =lexer->GetToken(); 
     m_lookAhead[0] = lexer->GetToken();
@@ -66,6 +69,11 @@ void Parser::next(Token::Type type) {
         m_current = m_lookAhead[0];
         m_lookAhead[0] = m_lookAhead[1];
         m_lookAhead[1] = m_pLexer->GetToken();   
+
+        //line number;
+        if (m_current->isType(Token::NEWLINE)) {
+            lineno++;
+        }
     } while (m_current->isType(Token::NEWLINE) );
     for(int i = 0; i < level; i++)
         std::cout << "  ";
@@ -148,45 +156,39 @@ ASTNode* Parser::block() {
     return node;
 }
 
-/*
- * stat ::=  ‘;’ | 
- *      varlist ‘=’ explist | 
- *      functioncall | 
- *      label | 
- *      break | 
- *      goto Name | 
- *      do block end | 
- *      while exp do block end | 
- *      repeat block until exp | 
- *      if exp then block {elseif exp then block} [else block] end | 
- *      for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end | 
- *      for namelist in explist do block end | 
- *      function funcname funcbody | 
- *      local function Name funcbody | 
- *      local namelist [‘=’ explist] 
- */
-ASTNode* Parser::stat() {
-  
-    std::cout << "-------------------------------------" << std::endl;
-    enter("stat");
+ASTNode* Parser::assign_stat() {
+    return NULL;
+}
 
-    if(match(Token::SEMICOLON) )
-    {
-        next();
-        leave();
-        return new ASTNode;
-    } else if( match ("function") ) {
-        next();
-        ASTNode* node = new ASTNode;
-        //funcname
-        debug_print(" --> funcname() ");
-        node->addChild(funcname());
-        debug_print(" --> funcbody() ");
-        node->addChild(funcbody());
-        debug_print(" --> funcbody() end");
-        leave();
-        return node;
-    } else if( match ("if") ) {
+ASTNode* Parser::functioncall_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::label_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::break_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::goto_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::do_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::while_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::repeat_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::if_stat() {
         debug_print(" try to match if ");
         ASTNode* ifNode = new ASTNode;
         next();
@@ -231,7 +233,69 @@ ASTNode* Parser::stat() {
 
         leave();
         return ifNode;
+}
 
+ASTNode* Parser::for_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::range_for_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::function_stat() {
+        next();
+        ASTNode* node = new ASTNode;
+        //funcname
+        debug_print(" --> funcname() ");
+        node->addChild(funcname());
+        debug_print(" --> funcbody() ");
+        node->addChild(funcbody());
+        debug_print(" --> funcbody() end");
+        leave();
+        return node;
+}
+
+ASTNode* Parser::local_function_stat() {
+    return NULL;
+}
+
+ASTNode* Parser::local_assign_stat() {
+    return NULL;
+}
+
+
+/*
+ * stat ::=  ‘;’ | 
+ *      //  varlist ‘=’ explist | 
+ *      //  functioncall | 
+ *      label | 
+ *      break | 
+ *      goto Name | 
+ *      do block end | 
+ *      while exp do block end | 
+ *      repeat block until exp | 
+ *      //  if exp then block {elseif exp then block} [else block] end | 
+ *      for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end | 
+ *      for namelist in explist do block end | 
+ *      //  function funcname funcbody | 
+ *      local function Name funcbody | 
+ *      local namelist [‘=’ explist] 
+ */
+ASTNode* Parser::stat() {
+  
+    std::cout << "-------------------------------------" << std::endl;
+    enter("stat");
+
+    if(match(Token::SEMICOLON) )
+    {
+        next();
+        leave();
+        return new ASTNode;
+    } else if( match ("function") ) {
+        return function_stat();
+    } else if( match ("if") ) {
+        return if_stat();
     } else if(match("break")
             || match ("local")
             || match ("for")

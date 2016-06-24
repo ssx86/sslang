@@ -38,10 +38,29 @@ class Parser
         Token* m_current;
         Token* m_lookAhead[2];
 
+        int lineno;
+
     private:
         ASTNode* chunk() ;
         ASTNode* block() ;
         ASTNode* stat() ;
+
+        ASTNode* assign_stat();
+        ASTNode* functioncall_stat();
+        ASTNode* label_stat();
+        ASTNode* break_stat();
+        ASTNode* goto_stat();
+        ASTNode* do_stat();
+        ASTNode* while_stat();
+        ASTNode* repeat_stat();
+        ASTNode* if_stat();
+        ASTNode* for_stat();
+        ASTNode* range_for_stat();
+        ASTNode* function_stat();
+        ASTNode* local_function_stat();
+        ASTNode* local_assign_stat();
+
+
         ASTNode* retstat() ;
         ASTNode* label() ;
         ASTNode* funcname() ;
