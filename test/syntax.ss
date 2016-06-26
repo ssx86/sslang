@@ -1,3 +1,6 @@
+for i = 1, 5, 1 do 
+    i = 1 + i
+end
 ;
 a = 13
 b = 'Hello world'

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 
-const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import"};
+const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import", "for"};
 
 Token::Token() {
 }

@@ -60,9 +60,9 @@ Token* Parser::current() {
 void Parser::next(Token::Type type) {
 
     //预判
-    if ( type != Token::UNKNOWN && m_lookAhead[0] 
-            && m_lookAhead[0]->isType(type) ) {
-        std::cout << "[" << current()->tostring() << "] " << "error!, expected << " << type << std::endl;
+    if ( type != Token::UNKNOWN && current()
+            && !current()->isType(type) ) {
+        std::cout << "[" << current()->tostring() << "] " << "error!, expected << " << type << ", got " << current()->m_type << std::endl;
         exit(1);
     }
     do {
@@ -75,9 +75,7 @@ void Parser::next(Token::Type type) {
             lineno++;
         }
     } while (m_current->isType(Token::NEWLINE) );
-    for(int i = 0; i < level; i++)
-        std::cout << "  ";
-    std::cout << "{" << current()->tostring() << "}" << std::endl;
+    std::cout << "Token: {" << current()->tostring() << "}" << std::endl;
 
 }
 
@@ -180,8 +178,19 @@ ASTNode* Parser::do_stat() {
     return NULL;
 }
 
+/* while exp do block end | */
 ASTNode* Parser::while_stat() {
-    return NULL;
+    next(); // while
+    ASTNode* whileNode = new ASTNode;
+    ASTNode* expNode = exp();
+
+    next(); // do
+
+    ASTNode* blockNode = block();
+
+    next(); // end
+
+    return whileNode;
 }
 
 ASTNode* Parser::repeat_stat() {
@@ -189,7 +198,7 @@ ASTNode* Parser::repeat_stat() {
 }
 
 ASTNode* Parser::if_stat() {
-        debug_print(" try to match if ");
+        debug_print("************************** try to match if ");
         ASTNode* ifNode = new ASTNode;
         next();
 
@@ -235,12 +244,68 @@ ASTNode* Parser::if_stat() {
         return ifNode;
 }
 
+/* for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |  */
 ASTNode* Parser::for_stat() {
-    return NULL;
+    enter("for_stat");
+    next(Token::ID); // for
+    ASTNode* forNode = new ASTNode;
+
+    ASTNode* nameNode = new ASTNode(current());
+    forNode->addChild(nameNode);
+    next(Token::ID); // Name
+
+    next(Token::ASSIGN); // =
+
+    
+    debug_print("=========================exp===========");
+    ASTNode* fromExpNode = exp();
+    debug_print("=========================exp=====end======");
+    forNode->addChild(fromExpNode);
+
+    next(Token::COMMA);
+
+    ASTNode* toExpNode = exp();
+    forNode->addChild(toExpNode);
+
+    if(match(Token::COMMA) ) {
+        next(Token::COMMA);
+        ASTNode* stepExpNode = exp();
+        forNode->addChild(stepExpNode);
+    }
+    if(match("do")) { debug_print(" now not bad "); }
+    next(); // do
+
+    ASTNode* blockNode = block();
+    forNode->addChild(blockNode);
+
+    next(); // end
+    leave();
+    return forNode;
 }
 
+/* for namelist in explist do block end | */
 ASTNode* Parser::range_for_stat() {
-    return NULL;
+    enter("range_for");
+    next(); // for
+    ASTNode* forNode = new ASTNode;
+
+    ASTNode* namelistNode = namelist();
+    forNode->addChild(namelistNode);
+
+    next(); // in
+
+    ASTNode* rangeNode = explist();
+    forNode->addChild(rangeNode);
+
+    next(); // do
+
+    ASTNode* blockNode = block();
+    forNode->addChild(blockNode);
+
+    next(); // end
+
+    leave();
+    return forNode;
 }
 
 ASTNode* Parser::function_stat() {
@@ -287,22 +352,34 @@ ASTNode* Parser::stat() {
     std::cout << "-------------------------------------" << std::endl;
     enter("stat");
 
+    std::cout << "current:" << current()->tostring() << std::endl;
+
     if(match(Token::SEMICOLON) )
     {
+        std::cout << "current:1" << current()->tostring() << std::endl;
         next();
         leave();
         return new ASTNode;
     } else if( match ("function") ) {
+        std::cout << "current:2" << current()->tostring() << std::endl;
         return function_stat();
     } else if( match ("if") ) {
+        std::cout << "current:3" << current()->tostring() << std::endl;
         return if_stat();
+    } else if( match ("for") ) {
+        std::cout << "current:4" << current()->tostring() << std::endl;
+        if (match(Token::ASSIGN, 2)) {  // varlist
+            return for_stat();
+        } else {
+            return range_for_stat();
+        }   
+    } else if ( match ("while") ) {
+        return while_stat();
     } else if(match("break")
             || match ("local")
-            || match ("for")
             || match ("repeat")
             || match ("do")
             || match ("goto")
-            || match ("while")
             || match (Token::SEMICOLON)
             //   || match ("::")
       ) {
