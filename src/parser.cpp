@@ -81,6 +81,10 @@ void Parser::next(Token::Type type) {
         m_lookAhead[0] = m_lookAhead[1];
         m_lookAhead[1] = m_pLexer->GetToken();   
 
+		if (!current()) {
+			std::cout << "end of file" << std::endl;
+			exit(0);
+		}
         //line number;
         if (m_current->isType(Token::NEWLINE)) {
             lineno++;
@@ -389,16 +393,8 @@ ASTNode* Parser::stat() {
     if( match(Token::ID) || match(Token::LP) ) {
         ASTNode* varNode = var();
         varlist_or_functioncall_Node->addChild(varNode);
-        if(match(Token::COLON) || match(Token::LP)) {
+		if(!match(Token::COMMA) && !match(Token::ASSIGN)) {
             is_varlist_not_functioncall = false; // functioncall!
-            if(match(Token::COLON) ) {
-                varlist_or_functioncall_Node->addChild(new ASTNode(current()));
-                next();
-                varlist_or_functioncall_Node->addChild(new ASTNode(current()));
-                next();
-            }
-            ASTNode* argsNode = args();
-            varlist_or_functioncall_Node->addChild(argsNode);
             leave();
             return varlist_or_functioncall_Node;
         }else{
@@ -431,6 +427,10 @@ ASTNode* Parser::retstat() {
     ASTNode* explistNode = explist();
     ASTNode* retStatNode = new ASTNode;
     retStatNode->addChild(explistNode);
+
+	if (match(Token::SEMICOLON)) {
+		next(Token::SEMICOLON);
+	}
 
     leave();
     return retStatNode;
