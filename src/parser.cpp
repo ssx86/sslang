@@ -419,8 +419,7 @@ ASTNode* Parser::stat() {
         next();
         leave();
         return new ASTNode;
-    } else if(match(Token::SEMICOLON) )
-    {
+    } else if(match(Token::SEMICOLON) ) {
         next();
         leave();
         return new ASTNode;
@@ -448,7 +447,7 @@ ASTNode* Parser::stat() {
 
         leave();
         return NULL;
-    } else if(match("end") || match("return")) {
+    } else if(match("end") || match("return") || match("elseif")) {
 
         leave();
         return NULL; // 特殊处理
@@ -466,6 +465,7 @@ ASTNode* Parser::stat() {
     ASTNode* varlist_or_functioncall_Node = new ASTNode;
     if( match(Token::ID) || match(Token::LP) ) {
         ASTNode* varNode = var();
+
         varlist_or_functioncall_Node->addChild(varNode);
         if(!match(Token::COMMA) && !match(Token::ASSIGN)) {
             is_varlist_not_functioncall = false; // functioncall!
@@ -480,6 +480,7 @@ ASTNode* Parser::stat() {
                 varlist_or_functioncall_Node->addChild(varNode);
             }
 
+            debug_print(" deng yu === ");
             next(Token::ASSIGN); 
             ASTNode* explistNode = explist();
 
@@ -562,7 +563,7 @@ ASTNode* Parser::var() {
         node->addChild(new ASTNode(current()));
         next();
         _var(node);
-    }else if(match(Token::LP)) {
+    } else if(match(Token::LP)) {
         next(Token::LP);
         ASTNode* expNode = exp();
         node->addChild(expNode);
@@ -599,9 +600,11 @@ bool Parser::_var(ASTNode* prefix) {
 
     //lookforward : [ .
     if (match(Token::LBRACKET)) {
+        debug_print("want a [");
         next(Token::LBRACKET);
         ASTNode* expNode = exp();
         prefix->addChild(expNode);
+        debug_print("want a ]");
         next(Token::RBRACKET);
     }
     else if(match(Token::DOT)) {
@@ -830,11 +833,12 @@ ASTNode* Parser::args() {
         return NULL;
     }
     if( match(Token::LP) ) {
-        next();
+        next(Token::LP);
         if(!match(Token::RP)) {
             ASTNode* explistNode = explist();
             next(Token::RP);
             leave();
+            debug_print("got an explist");
             return explistNode;
         } else {
             next(Token::RP);

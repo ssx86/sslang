@@ -118,7 +118,12 @@ Token* Lexer::GetToken() {
             return new Token(Token::ADD);
 		case '-': 
 			if ('-' == current() ) {
-				do{ next();} while ( '\n' != current() );
+                if( m_lookAhead[0] == '[' && m_lookAhead[1] == '[') {
+                    do{ next(); } while ( ']' != m_lookAhead[0] || ']' != m_lookAhead[1]);
+                    next(); next(); next();
+                } else {
+                    do{ next();} while ( '\n' != current() );
+                }
 				return new Token(Token::COMMENT);
 			} else {
 				return new Token(Token::SUB);
