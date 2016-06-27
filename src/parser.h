@@ -21,6 +21,8 @@ class Parser
         bool match(std::string pattern, int offset = 0);
         bool match(Token::Type type, int offset = 0);
         void next(Token::Type type = Token::UNKNOWN);
+        void next(const char* str);
+        void do_next();
 
         void debug_print(std::string str);
         void enter(std::string str);
@@ -61,7 +63,7 @@ class Parser
         ASTNode* range_for_stat();
         ASTNode* function_stat();
         ASTNode* local_function_stat();
-        ASTNode* local_assign_stat();
+        ASTNode* local_namelist_stat();
 
 
         ASTNode* retstat() ;

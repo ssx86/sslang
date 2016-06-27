@@ -10,17 +10,17 @@ class Token
             NEWLINE = 100,       // \n
             STRING,
             ID,
+            KEYWORD,
             INT,
             DOUBLE,
             DOT,       // .
+            DOTDOT,    // ..
 			EQ,        // ==
             ADD,       // +
             SUB,       // -
             MUL,       // *
             DIV,       // /
-			SELF_ADD,  // ++
-			SELF_SUB,  // --
-			COMMENT,   // //
+			COMMENT,   // --
 			ASSIGN,    // =
             GT,        // >
             GE,        // >=
@@ -53,8 +53,6 @@ class Token
         Token(int value);
         Token(double value);
         Token(Type _type, const std::string &value); //for ID and STRING
-
-        bool isKeyword();
 
 
         ~Token();

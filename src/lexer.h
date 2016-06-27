@@ -22,7 +22,7 @@ class Lexer
 
         void skipSpace();
        
-        bool is_keyword(std::string&);
+        bool isKeyword(std::string&);
 
     private:
         std::istream* m_input;

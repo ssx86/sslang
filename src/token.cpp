@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <iostream>
 
-const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import", "for"};
 
 Token::Token() {
 }
@@ -26,28 +25,15 @@ Token::~Token()
 {
 }
 
-bool Token::isKeyword() {
-    if( m_type != ID )
-        return false;
-
-    for(int i = 0; i < sizeof(KEYWORDS) / sizeof(const char*); i++)
-    {
-        if (svalue == KEYWORDS[i])
-            return true;
-    }
-
-    return false;
-}
 
 std::string Token::tostring() {
     switch(m_type){
         case NEWLINE:
             return "<NEWLINE>";
+        case KEYWORD:
+            return std::string("<KEY:") + svalue + ">";
         case ID:
-            if ( isKeyword( ) )
-                return std::string("<KEY:") + svalue + ">";
-            else
-                return std::string("<") + svalue + ">";
+            return std::string("<") + svalue + ">";
         case STRING:
             return std::string("'") + svalue + "'";
         case INT:
@@ -64,6 +50,8 @@ std::string Token::tostring() {
             }
         case DOT:
             return ".";
+        case DOTDOT:
+            return "..";
         case EQ:
             return "==";
         case ASSIGN:
@@ -94,10 +82,6 @@ std::string Token::tostring() {
             return "+";
         case SUB:
             return "-";
-		case SELF_ADD:
-			return "++";
-		case SELF_SUB:
-			return "--";
         case MUL:
             return "*";
         case DIV:
@@ -121,7 +105,7 @@ std::string Token::tostring() {
 		case SEMICOLON:
 			return ";";
 		case COMMENT:
-			return "//";
+			return "<*COMMENT*>";
 		case SHARP:
 			return "#";
 

@@ -7,6 +7,8 @@
 
 #include <sstream>
 
+const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import", "for"};
+
 Lexer::Lexer(std::istream* _input) {
 	m_input = _input;
 	m_lookAhead[0] = 0;
@@ -29,7 +31,7 @@ Token* Lexer::GetToken() {
 	if (c == 0)
 		return NULL;
 
-	if (isalpha(c)) {
+	if (isalpha(c) || '_' == c) {
 		std::stringstream ss;
 		while(true) {
 			ss << c;
@@ -85,7 +87,12 @@ Token* Lexer::GetToken() {
 		next();
 		switch (c) {
         case '.':
-            return new Token(Token::DOT);
+            if('.' == current()) {
+                next();
+                return new Token(Token::DOTDOT);
+            } else{
+                return new Token(Token::DOT);
+            }
 		case '=': 
 			if ('=' == current() ) {
 				next();
@@ -108,16 +115,11 @@ Token* Lexer::GetToken() {
 				return new Token(Token::LT);
 			}
 		case '+': 
-			if ('+' == current() ) {
-				next();
-				return new Token(Token::SELF_ADD);
-			} else {
-				return new Token(Token::ADD);
-			}
+            return new Token(Token::ADD);
 		case '-': 
 			if ('-' == current() ) {
-				next();
-				return new Token(Token::SELF_SUB);
+				do{ next();} while ( '\n' != current() );
+				return new Token(Token::COMMENT);
 			} else {
 				return new Token(Token::SUB);
 			}
@@ -169,7 +171,13 @@ Token* Lexer::GetToken() {
 		case ';':
 			return new Token(Token::SEMICOLON);
 		case '~':
-			return new Token(Token::NOT);
+            if ('=' == current() ) {
+                next();
+                return new Token(Token::NE);
+            } else {
+                std::cerr << std::endl << "Unknown charactor: " << c << std::endl;
+                return NULL;
+            }
 		case '#':
 			return new Token(Token::SHARP);
 		default:
@@ -209,5 +217,16 @@ char Lexer::lookAhead1() {
 
 char Lexer::lookAhead2() {
 	return m_lookAhead[1];
+}
+
+bool Lexer::isKeyword(std::string& str) {
+
+    for(int i = 0; i < sizeof(KEYWORDS) / sizeof(const char*); i++)
+    {
+        if (str == KEYWORDS[i])
+            return true;
+    }
+
+    return false;
 }
 
