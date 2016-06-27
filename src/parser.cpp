@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#define DEBUG_ENTER 0
+
 void Parser::debug_print(std::string str) {
     std::cout << lineno << ":\t";
     for(int i = 0; i < level; i++)
@@ -13,19 +15,28 @@ void Parser::debug_print(std::string str) {
 }
 
 void Parser::enter(std::string str) {
+#if DEBUG_ENTER
     std::cout << lineno << ":\t";
     level ++;
     for(int i = 0; i < level; i++)
         std::cout << "  ";
     std::cout << "[ENTER]: " <<  str << std::endl;;
+    m_stack.push(str);
+#endif
 }
 
 void Parser::leave() {
+#if DEBUG_ENTER
+    std::string str = m_stack.top();
+    m_stack.pop();
+
     std::cout << lineno << ":\t";
     for(int i = 0; i < level; i++)
         std::cout << "  ";
-    std::cout << "[LEAVE]: "  << current()->tostring() << std::endl;;
+    std::cout << "[LEAVE]: "  << str << std::endl;;
     level --;
+#endif
+
 }
 
 void ASTNode::addChild(ASTNode* child) {
@@ -75,7 +86,7 @@ void Parser::next(Token::Type type) {
             lineno++;
         }
     } while (m_current->isType(Token::NEWLINE) );
-    std::cout << "Token: {" << current()->tostring() << "}" << std::endl;
+//    std::cout << "Token: {" << current()->tostring() << "}" << std::endl;
 
 }
 
@@ -137,18 +148,15 @@ ASTNode* Parser::block() {
     enter("block");
     ASTNode* node = new ASTNode;
     if (!match("return")) {
-        debug_print("going to match stat");
         while( ASTNode* stat_node = stat() ) {
             node->addChild(stat_node);
+            debug_print("got a stat");
         }
-        debug_print("going to match stat end");
     }
     if (match("return")) /* TODO: retstat */
     {
-        debug_print("return, matching");
         ASTNode* retstat_node = retstat();
         node->addChild(retstat_node);
-        debug_print("return, matching end");
     }
     leave();
     return node;
@@ -198,14 +206,12 @@ ASTNode* Parser::repeat_stat() {
 }
 
 ASTNode* Parser::if_stat() {
-        debug_print("************************** try to match if ");
         ASTNode* ifNode = new ASTNode;
         next();
 
         ASTNode* pathNode = new ASTNode;
 
         ASTNode* condNode = exp();
-        debug_print(" eat then ");
         next(); // then
         ASTNode* blockNode = block();
         pathNode->addChild(condNode);
@@ -226,7 +232,6 @@ ASTNode* Parser::if_stat() {
             ifNode->addChild(pathNode);
         }
         if(match("else")) {
-            debug_print(" try match else ");
             next();
             ASTNode* pathNode = new ASTNode;
             ASTNode* condNode = NULL;
@@ -236,9 +241,7 @@ ASTNode* Parser::if_stat() {
 
             ifNode->addChild(pathNode);
         }
-        debug_print(" eat end ");
         next(); // "end"
-        debug_print("got an if node");
 
         leave();
         return ifNode;
@@ -257,9 +260,7 @@ ASTNode* Parser::for_stat() {
     next(Token::ASSIGN); // =
 
     
-    debug_print("=========================exp===========");
     ASTNode* fromExpNode = exp();
-    debug_print("=========================exp=====end======");
     forNode->addChild(fromExpNode);
 
     next(Token::COMMA);
@@ -272,7 +273,6 @@ ASTNode* Parser::for_stat() {
         ASTNode* stepExpNode = exp();
         forNode->addChild(stepExpNode);
     }
-    if(match("do")) { debug_print(" now not bad "); }
     next(); // do
 
     ASTNode* blockNode = block();
@@ -312,11 +312,8 @@ ASTNode* Parser::function_stat() {
         next();
         ASTNode* node = new ASTNode;
         //funcname
-        debug_print(" --> funcname() ");
         node->addChild(funcname());
-        debug_print(" --> funcbody() ");
         node->addChild(funcbody());
-        debug_print(" --> funcbody() end");
         leave();
         return node;
 }
@@ -349,25 +346,18 @@ ASTNode* Parser::local_assign_stat() {
  */
 ASTNode* Parser::stat() {
   
-    std::cout << "-------------------------------------" << std::endl;
     enter("stat");
-
-    std::cout << "current:" << current()->tostring() << std::endl;
 
     if(match(Token::SEMICOLON) )
     {
-        std::cout << "current:1" << current()->tostring() << std::endl;
         next();
         leave();
         return new ASTNode;
     } else if( match ("function") ) {
-        std::cout << "current:2" << current()->tostring() << std::endl;
         return function_stat();
     } else if( match ("if") ) {
-        std::cout << "current:3" << current()->tostring() << std::endl;
         return if_stat();
     } else if( match ("for") ) {
-        std::cout << "current:4" << current()->tostring() << std::endl;
         if (match(Token::ASSIGN, 2)) {  // varlist
             return for_stat();
         } else {
@@ -393,19 +383,13 @@ ASTNode* Parser::stat() {
         return NULL; // 特殊处理
     }
 
-    debug_print("matching varlist");
-
 
     bool is_varlist_not_functioncall = false;
     ASTNode* varlist_or_functioncall_Node = new ASTNode;
     if( match(Token::ID) || match(Token::LP) ) {
-        debug_print("fuck start!!!");
         ASTNode* varNode = var();
-        debug_print("fuck end!!!");
         varlist_or_functioncall_Node->addChild(varNode);
-        debug_print("got a varnode");
         if(match(Token::COLON) || match(Token::LP)) {
-            debug_print("it is a function call!");
             is_varlist_not_functioncall = false; // functioncall!
             if(match(Token::COLON) ) {
                 varlist_or_functioncall_Node->addChild(new ASTNode(current()));
@@ -415,8 +399,6 @@ ASTNode* Parser::stat() {
             }
             ASTNode* argsNode = args();
             varlist_or_functioncall_Node->addChild(argsNode);
-            debug_print("got a function call!");
-
             leave();
             return varlist_or_functioncall_Node;
         }else{
@@ -426,19 +408,16 @@ ASTNode* Parser::stat() {
                 next(Token::COMMA);  // eat ,
                 ASTNode* varNode = var();
                 varlist_or_functioncall_Node->addChild(varNode);
-                debug_print("add something into var");
             }
 
             next(Token::ASSIGN); 
             ASTNode* explistNode = explist();
 
-            debug_print("got a varlist = explist");
             leave();
             return varlist_or_functioncall_Node;
         }
     }
 
-    debug_print("error!!!! no match");
 }
 
 /*
@@ -449,13 +428,10 @@ ASTNode* Parser::retstat() {
 
     next(); // eat key word 'return'
 
-    debug_print("try explist");
     ASTNode* explistNode = explist();
-    debug_print("try explist end");
     ASTNode* retStatNode = new ASTNode;
     retStatNode->addChild(explistNode);
 
-    debug_print(" got a retstat ");
     leave();
     return retStatNode;
 }
@@ -605,9 +581,7 @@ ASTNode* Parser::explist() {
     enter("explist");
 
     ASTNode* explistNode = new ASTNode;
-    debug_print("try exp");
     ASTNode* expNode = exp();
-    debug_print("try exp end");
     explistNode->addChild(expNode);
     while(match(Token::COMMA)){
         next(Token::COMMA);
@@ -615,7 +589,6 @@ ASTNode* Parser::explist() {
         explistNode->addChild(expNode);
     }
     leave();
-    debug_print("got an explist");
     return explistNode;
 
 }
@@ -640,7 +613,6 @@ ASTNode* Parser::exp() {
             match ("...")  // TODO
        )
     {  
-        debug_print(" this is an int ");
         ASTNode* node = new ASTNode(current());
         next();
         expNode->addChild(node);
@@ -663,13 +635,11 @@ ASTNode* Parser::exp() {
             } else {
                 testNode = prefixexp();
                 expNode->addChild(testNode);
-                debug_print("got a prefixexp exp exp !!!");
             }
         }
     }
     _exp(expNode);
 
-    debug_print("got a expNode");
     leave();
     return expNode;
 }
@@ -822,11 +792,8 @@ ASTNode* Parser::funcbody() {
     ASTNode* parlistNode = parlist();
     next(Token::RP);
 
-    debug_print("------------------------");
     ASTNode* blockNode = block();
-    debug_print("------------------------");
 
-    debug_print("End");
     next(Token::ID); // "end"
     node->addChild(parlistNode);
     node->addChild(blockNode);
@@ -841,14 +808,12 @@ ASTNode* Parser::parlist() {
     enter("parlist");
     ASTNode* namelistNode = NULL;
     if(match(Token::RP)) {
-        debug_print("got a null parlist");
         leave();
         return NULL;
     }else if(match("...")) {
         ASTNode* node =  new ASTNode(current());
         next();
         namelistNode->addChild(node);
-        debug_print("got a ... parlist");
         leave();
         return namelistNode;
     } else {
@@ -857,7 +822,6 @@ ASTNode* Parser::parlist() {
             namelistNode->addChild(new ASTNode(current()));
             next();
         }
-        debug_print("got a parlist");
         leave();
         return namelistNode;
     }
@@ -892,7 +856,6 @@ ASTNode* Parser::fieldlist() {
             node->addChild(fieldNode);
         }
     }
-    debug_print("got a list!" );
     leave();
     return node;
 }

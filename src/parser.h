@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 #include <string>
+#include <stack>
 
 #include "node.h"
 
@@ -25,6 +26,8 @@ class Parser
         void enter(std::string str);
         void leave();
         int level;
+
+        std::stack<std::string> m_stack;
 
     private:
         Token* getTokenFromOffset(int offset);
