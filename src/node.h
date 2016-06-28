@@ -33,7 +33,10 @@ class ASTNode{
         std::vector<ASTNode*> m_children;
 
         virtual Value* eval() {
+            std::cout << "evaling" << std::endl;
             Value* val = NULL;
+            if(m_token)
+                std::cout << m_token->tostring() << std::endl;
             for(std::vector<ASTNode*>::iterator it =  m_children.begin(); it != m_children.end(); 
                     it++)
             {

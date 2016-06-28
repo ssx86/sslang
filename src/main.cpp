@@ -42,8 +42,12 @@ int main(int argc, char* argv[])
     Parser parser(pLexer);
     ASTNode* root = parser.Parse();
 
+    /*
     if (root)
         root->eval();
+    else
+        std::cout << "root not found" << std::endl;
+        */
 
     return 0;
 }

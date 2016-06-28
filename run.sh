@@ -5,5 +5,8 @@ echo "-----------syntax------------"
 echo "-----------lua------------" 
 ./sslang ./test/lua.ss >> output.txt
 
+echo "-----------case1------------" 
+./sslang ./test/case1.ss >> output.txt
+
 echo "-----------tooshort------------" 
 ./sslang ./test/tooshort.ss >> output.txt

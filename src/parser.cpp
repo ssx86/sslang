@@ -5,14 +5,13 @@
 #include <cstdlib>
 #include <iostream>
 
-#define DEBUG_ENTER 1
+#define DEBUG_ENTER 0
 
 void Parser::debug_print(std::string str) {
     std::cout << lineno << ":\t";
 #if DEBUG_ENTER
     //for(int i = 0; i < level; i++)
     //std::cout << "  ";
-    std::cout << "\t" << "[" << current()->tostring() << "] " << str << std::endl;;
 #else
     std::cout <<  str << std::endl;;
 #endif
@@ -81,14 +80,19 @@ void Parser::do_next() {
 
         if (!current()) {
             std::cout << "end of file" << std::endl;
-            exit(0);
+            break;
         }
         //line number;
         if (m_current->isType(Token::NEWLINE)) {
             lineno++;
         }
     } while (m_current->isType(Token::NEWLINE) );
-    std::cout << "Token: {" << current()->tostring() << "}" << std::endl;
+
+    if(current()) {
+#if DEBUG_ENTER
+        std::cout << "Token: {" << current()->tostring() << "}" << std::endl;
+#endif
+    }
 }
 
 
@@ -138,6 +142,9 @@ ASTNode* Parser::Parse() {
 bool Parser::match(std::string pattern, int offset) {
     Token *token = getTokenFromOffset(offset);
 
+    if(!token)
+        return false;
+
     //string(id/keyword)
     if (token->isType(Token::ID) && token->svalue == pattern)
         return true;
@@ -147,6 +154,9 @@ bool Parser::match(std::string pattern, int offset) {
 
 bool Parser::match(Token::Type type, int offset) {
     Token *token = getTokenFromOffset(offset);
+
+    if(!token)
+        return false;
 
     if (token->isType(type))
         return true;
@@ -166,8 +176,10 @@ ASTNode* Parser::chunk() {
  * block ::= {stat} [retstat]
  */
 ASTNode* Parser::block() {
-
+    if (current() == NULL) 
+        return NULL;
     enter("block");
+
     ASTNode* node = new ASTNode;
     if (!match("return")) {
         while( ASTNode* stat_node = stat() ) {
@@ -180,7 +192,6 @@ ASTNode* Parser::block() {
         node->addChild(retstat_node);
     }
     leave();
-    debug_print("got a block");
     return node;
 }
 
@@ -227,7 +238,6 @@ ASTNode* Parser::while_stat() {
 
     ASTNode* blockNode = block();
 
-    std::cout << "waiting for end 4" << std::endl;
     next("end"); // end
 
     return whileNode;
@@ -246,9 +256,7 @@ ASTNode* Parser::if_stat() {
     ASTNode* pathNode = new ASTNode;
 
     ASTNode* condNode = exp();
-    debug_print("want a then");
     next("then"); // then
-    debug_print("got a then");
     ASTNode* blockNode = block();
     pathNode->addChild(condNode);
     pathNode->addChild(blockNode);
@@ -257,7 +265,6 @@ ASTNode* Parser::if_stat() {
 
     while(match("elseif")) {
         next("elseif");
-        debug_print("got an elseif");
         ASTNode* pathNode = new ASTNode;
 
         ASTNode* condNode = exp();
@@ -279,7 +286,6 @@ ASTNode* Parser::if_stat() {
         ifNode->addChild(pathNode);
     }
 
-    std::cout << "waiting for end" << std::endl;
     next("end"); // "end"
 
     leave();
@@ -312,14 +318,11 @@ ASTNode* Parser::for_stat() {
         ASTNode* stepExpNode = exp();
         forNode->addChild(stepExpNode);
     }
-    std::cout << "waiting for do 2" << std::endl;
     next("do"); // do
-    std::cout << "waiting for do 2 ok" << std::endl;
 
     ASTNode* blockNode = block();
     forNode->addChild(blockNode);
 
-    std::cout << "waiting for end 2" << std::endl;
     next("end"); // end
     leave();
     return forNode;
@@ -344,7 +347,6 @@ ASTNode* Parser::range_for_stat() {
     ASTNode* blockNode = block();
     forNode->addChild(blockNode);
 
-    std::cout << "waiting for end 3" << std::endl;
     next("end"); // end
 
     leave();
@@ -412,8 +414,11 @@ ASTNode* Parser::local_namelist_stat() {
  *      // local namelist [‘=’ explist] 
  */
 ASTNode* Parser::stat() {
+    if(current() == NULL)
+        return NULL;
 
     enter("stat");
+
 
     if(match(Token::COMMENT)) {
         next();
@@ -447,8 +452,11 @@ ASTNode* Parser::stat() {
 
         leave();
         return NULL;
-    } else if(match("end") || match("return") || match("elseif")) {
-
+    } else if(match("end") 
+            || match("return") 
+            || match("elseif") 
+            || match("until") 
+            || match(Token::ASSIGN) ) {
         leave();
         return NULL; // 特殊处理
     } else if (match("local") ) {
@@ -480,7 +488,6 @@ ASTNode* Parser::stat() {
                 varlist_or_functioncall_Node->addChild(varNode);
             }
 
-            debug_print(" deng yu === ");
             next(Token::ASSIGN); 
             ASTNode* explistNode = explist();
 
@@ -600,11 +607,9 @@ bool Parser::_var(ASTNode* prefix) {
 
     //lookforward : [ .
     if (match(Token::LBRACKET)) {
-        debug_print("want a [");
         next(Token::LBRACKET);
         ASTNode* expNode = exp();
         prefix->addChild(expNode);
-        debug_print("want a ]");
         next(Token::RBRACKET);
     }
     else if(match(Token::DOT)) {
@@ -838,7 +843,6 @@ ASTNode* Parser::args() {
             ASTNode* explistNode = explist();
             next(Token::RP);
             leave();
-            debug_print("got an explist");
             return explistNode;
         } else {
             next(Token::RP);
