@@ -43,17 +43,11 @@ class Parser
         Token* m_current;
         Token* m_lookAhead[2];
 
-        int lineno;
-
     private:
         ASTNode* chunk() ;
         ASTNode* block() ;
         ASTNode* stat() ;
 
-        ASTNode* assign_stat();
-        ASTNode* functioncall_stat();
-        ASTNode* label_stat();
-        ASTNode* break_stat();
         ASTNode* goto_stat();
         ASTNode* do_stat();
         ASTNode* while_stat();
@@ -74,8 +68,8 @@ class Parser
         bool _var(ASTNode* prefix) ;
         ASTNode* namelist() ;
         ASTNode* explist() ;
-        ASTNode* exp() ;
-        bool _exp(ASTNode* prefix) ;
+        ExpNode* exp() ;
+        bool _exp(ExpNode* prefix) ;
         ASTNode* prefixexp() ;
         bool _prefixexp(ASTNode* prefix) ;
         ASTNode* functioncall() ;
@@ -86,9 +80,12 @@ class Parser
         ASTNode* tableconstructor() ;
         ASTNode* fieldlist() ;
         ASTNode* field() ;
-        ASTNode* fieldsep() ;
+        bool fieldsep() ;
         ASTNode* binop() ;
-        ASTNode* unop() ;
+        UnopNode* unop() ;
+        NameNode* name();
+        LeafNode* leaf();
+        EmptyNode* empty();
 };
 
 #endif

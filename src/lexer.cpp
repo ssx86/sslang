@@ -23,6 +23,9 @@ void Lexer::skipSpace(){
 	}
 }
 
+int Lexer::getLineNo() {
+    return m_lineno;
+}
 
 Token* Lexer::GetToken() {
 	skipSpace();
@@ -119,7 +122,11 @@ Token* Lexer::GetToken() {
 		case '-': 
 			if ('-' == current() ) {
                 if( m_lookAhead[0] == '[' && m_lookAhead[1] == '[') {
-                    do{ next(); } while ( ']' != m_lookAhead[0] || ']' != m_lookAhead[1]);
+                    do{ 
+                        next();
+                        if(current() == '\n')
+                            m_lineno++;
+                    } while ( ']' != m_lookAhead[0] || ']' != m_lookAhead[1]);
                     next(); next(); next();
                 } else {
                     do{ next();} while ( '\n' != current() );
@@ -156,6 +163,7 @@ Token* Lexer::GetToken() {
 		case '*': 
 			return new Token(Token::MUL);
 		case '\n': 
+            m_lineno++;
 			return new Token(Token::NEWLINE);
 		case '(': 
 			return new Token(Token::LP);
@@ -172,7 +180,10 @@ Token* Lexer::GetToken() {
 		case ',':
 			return new Token(Token::COMMA);
 		case ':':
-			return new Token(Token::COLON);
+            if (':' == current() )
+                return new Token(Token::LABEL);
+            else
+                return new Token(Token::COLON);
 		case ';':
 			return new Token(Token::SEMICOLON);
 		case '~':

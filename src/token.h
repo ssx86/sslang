@@ -43,6 +43,7 @@ class Token
             RBRACKET,  // ]
 			COMMA,     // ,
 			COLON,     // :
+			LABEL,     // ::
 			SEMICOLON, // ;
             SHARP,     // #
             UNKNOWN

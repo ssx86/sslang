@@ -102,6 +102,8 @@ std::string Token::tostring() {
 			return ",";
 		case COLON:
 			return ":";
+		case LABEL:
+			return "::";
 		case SEMICOLON:
 			return ";";
 		case COMMENT:

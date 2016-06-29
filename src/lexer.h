@@ -13,6 +13,8 @@ class Lexer
         bool Init();
         Token* GetToken();
 
+        int getLineNo();
+
     private:
         void next();
 
@@ -28,6 +30,8 @@ class Lexer
         std::istream* m_input;
         char m_lookAhead[2];
         char m_current;
+
+        int m_lineno;
 
         std::map<std::string, int> m_keyword_map;
 };
