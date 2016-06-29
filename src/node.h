@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cassert>
 using namespace std;
 
     
@@ -17,6 +18,9 @@ class Value {
 class StringValue : public Value {
     public:
         StringValue(const char* str) {
+            m_value = str;
+        }
+        StringValue(std::string str) {
             m_value = str;
         }
 
@@ -105,16 +109,14 @@ class ASTNode{
         }
 };
 
-class ExpNode : public ASTNode{
-    public:
-
-    private:
-};
 
 class NameNode : public ASTNode{
     public:
         NameNode(Token* token) {
             m_token = token;
+        }
+        virtual Value* eval(Enveronment* env = NULL) {
+            return new StringValue(m_token->tostring());
         }
     private:
         Token* m_token;
@@ -135,9 +137,8 @@ class LeafNode : public ASTNode {
         LeafNode(Token* token) {
             m_token = token;
         }
-        virtual Value* eval() {
-            std::cout << m_token->tostring() << std::endl;
-            return NULL;
+        virtual Value* eval(Enveronment* env = NULL) {
+            return new StringValue(m_token->tostring());
         }
     private:
         Token* m_token;
@@ -155,8 +156,7 @@ class FieldNode : public ASTNode {
         void setValue(ASTNode* value) {
             m_value = value;
         }
-        virtual Value* eval() {
-            std::cout << "Field" << std::endl;
+        virtual Value* eval(Enveronment* env = NULL) {
             return NULL;
         }
     private:
@@ -170,7 +170,7 @@ class BinopNode : public ASTNode {
             m_op = token;
         }
 
-        virtual Value* eval() {
+        virtual Value* eval(Enveronment* env = NULL) {
             return new StringValue("Binop");
         }
     private:
@@ -187,19 +187,19 @@ class ForNode : public ASTNode {
         void setName(NameNode* name) {
             m_name = name;
         }
-        void setFrom(ExpNode* exp) {
+        void setFrom(ASTNode* exp) {
             m_from = exp;
         }
-        void setTo(ExpNode* exp) {
+        void setTo(ASTNode* exp) {
             m_to = exp;
         }
-        void setStep(ExpNode* exp) {
+        void setStep(ASTNode* exp) {
             m_step = exp;
         }
         void setBlock(ASTNode* block) {
             m_block = block;
         }
-        virtual Value* eval() {
+        virtual Value* eval(Enveronment* env = NULL) {
             m_from->eval();
             m_to->eval();
             if(m_step) {
@@ -209,16 +209,16 @@ class ForNode : public ASTNode {
         }
     private:
         NameNode* m_name;
-        ExpNode* m_from;
-        ExpNode* m_to;
-        ExpNode* m_step;
+        ASTNode* m_from;
+        ASTNode* m_to;
+        ASTNode* m_step;
 
         ASTNode* m_block;
 };
 
 class EmptyNode : public ASTNode {
     public:
-        Value* eval () {
+        virtual Value* eval(Enveronment* env = NULL) {
             return new StringValue("empty");
         }
 };
@@ -231,11 +231,12 @@ class AssignNode : public ASTNode {
         void addExp(ASTNode* exp) {
             m_exps.push_back(exp);
         }
-        Value* eval (Enveronment *env) {
+        virtual Value* eval(Enveronment* env = NULL) {
 
-            cout << "evaling~~~";
             for(int i = 0; i < (int)m_vars.size(); i++) {
+
                 env->value[m_vars[i]->eval()->tostring()] = m_exps[i]->eval();
+                cout << m_vars[i]->eval()->tostring() << " = " << m_exps[i]->eval()->tostring() << endl;
             }
             return NULL;
         }

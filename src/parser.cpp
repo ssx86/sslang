@@ -301,17 +301,17 @@ ASTNode* Parser::for_stat() {
 
     next(Token::ASSIGN); // =
 
-    ExpNode* fromExpNode = exp();
+    ASTNode* fromExpNode = exp();
     forNode->setFrom(fromExpNode);
 
     next(Token::COMMA);
 
-    ExpNode* toExpNode = exp();
+    ASTNode* toExpNode = exp();
     forNode->setTo(toExpNode);
 
     if(match(Token::COMMA) ) {
         next(Token::COMMA);
-        ExpNode* stepExpNode = exp();
+        ASTNode* stepExpNode = exp();
         forNode->setStep(stepExpNode);
     }
     next("do"); // do
@@ -474,6 +474,7 @@ ASTNode* Parser::stat() {
             AssignNode* assignNode = new AssignNode;
             assignNode->addVar(varNode);
 
+
             while (match(Token::COMMA)) {
                 next();  // eat ,
                 ASTNode* nextVarNode = var();
@@ -581,11 +582,14 @@ ASTNode* Parser::varlist() {
 ASTNode* Parser::var() {
     enter("var");
 
-    ASTNode* node = new ASTNode;
+    ASTNode* node = NULL;
     if(match(Token::ID) ) {
-        node->addChild(name());
-        _var(node);
+
+        node = name();
+
     } else if(match(Token::LP)) {
+        node = new ASTNode;
+
         next(Token::LP);
         ASTNode* expNode = exp();
         node->addChild(expNode);
@@ -598,15 +602,14 @@ ASTNode* Parser::var() {
             node->addChild(expNode2);
             next(Token::RBRACKET);
 
-            _var(node);
         }
         else if (match(Token::DOT)) {
             next(Token::DOT);
             //next is Name
             node->addChild(name());
-            _var(node);
         }
     }
+    _var(node);
 
     leave();
     return node;
@@ -673,11 +676,11 @@ ASTNode* Parser::explist() {
     enter("explist");
 
     ASTNode* explistNode = new ASTNode;
-    ExpNode* expNode = exp();
+    ASTNode* expNode = exp();
     explistNode->addChild(expNode);
     while(match(Token::COMMA) && !match("...", 1) ){
         next(Token::COMMA);
-        ExpNode* expNode = exp();
+        ASTNode* expNode = exp();
         explistNode->addChild(expNode);
     }
     leave();
@@ -693,14 +696,14 @@ ASTNode* Parser::explist() {
  *         LiteralString  | '...'  | functiondef   |
  *         prefixexp  | tableconstructor  | unop exp )  `exp
  */
-ExpNode* Parser::exp() {
+ASTNode* Parser::exp() {
     enter("exp");
 
     if(match("end")) {
         return NULL; // 特殊处理
     }
 
-    ExpNode* expNode = new ExpNode;
+    ASTNode* expNode = new ASTNode;
     if (match ("nil") ||
             match ("false") ||
             match ("true") ||
@@ -728,7 +731,7 @@ ExpNode* Parser::exp() {
             UnopNode* testNode = unop();
             if(testNode) { // is unop
                 expNode->addChild( testNode );
-                ExpNode* expNode2 = exp();
+                ASTNode* expNode2 = exp();
                 expNode->addChild( expNode2 );
 
             } else {
@@ -746,7 +749,7 @@ ExpNode* Parser::exp() {
 /* 
  * `exp ::= binop exp | nil
  */
-bool Parser::_exp(ExpNode* prefix) {
+bool Parser::_exp(ASTNode* prefix) {
     enter("_exp");
     ASTNode* testNode = binop();
     if (testNode) {
@@ -966,20 +969,20 @@ ASTNode* Parser::field() {
 
     if (match(Token::LBRACKET) ) {
         next(Token::LBRACKET);
-        ExpNode* keyNode = exp();
+        ASTNode* keyNode = exp();
         next(Token::ASSIGN);
-        ExpNode* valueNode = exp();
+        ASTNode* valueNode = exp();
         fieldNode->setKey(keyNode);
         fieldNode->setKey(valueNode);
     }
     else if (match(Token::ID) && match(Token::ASSIGN, 1)) {
         NameNode* keyNode = name();
         next(); // =
-        ExpNode* valueNode = exp();
+        ASTNode* valueNode = exp();
         fieldNode->setKey(keyNode);
         fieldNode->setValue(valueNode);
     } else {
-        ExpNode* keyNode = exp();
+        ASTNode* keyNode = exp();
         fieldNode->setKey(keyNode);
     }
     leave();

@@ -1,6 +1,6 @@
 for i = 1, 5, 1 do 
-    i = 1 + i
-    i = i - 1
+    i = 3 + i
+    i = i - 7
 end
 ;
 a = 13

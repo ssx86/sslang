@@ -68,8 +68,8 @@ class Parser
         bool _var(ASTNode* prefix) ;
         ASTNode* namelist() ;
         ASTNode* explist() ;
-        ExpNode* exp() ;
-        bool _exp(ExpNode* prefix) ;
+        ASTNode* exp() ;
+        bool _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
         bool _prefixexp(ASTNode* prefix) ;
         ASTNode* functioncall() ;
