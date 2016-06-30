@@ -53,7 +53,6 @@ int main(int argc, char* argv[])
         if (root)
         {
             Value* value = root->eval();
-            std::cout << value->tostring();
         }
         else
             std::cout << "root not found" << std::endl;

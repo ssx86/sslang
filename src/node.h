@@ -2,77 +2,15 @@
 #define _SS_NODE_H_
 
 #include "token.h"
+#include "value.h"
 #include <iostream>
 #include <vector>
 #include <map>
 #include <cassert>
+
 using namespace std;
 
     
-
-class Value {
-    public:
-    virtual std::string tostring() = 0;
-};
-
-class StringValue : public Value {
-    public:
-        StringValue(const char* str) {
-            m_value = str;
-        }
-        StringValue(std::string str) {
-            m_value = str;
-        }
-
-        std::string tostring() {
-            return m_value;
-        }
-    private:
-        std::string m_value;
-};
-
-class DoubleValue : public Value {
-    public:
-        DoubleValue(double d) {
-            m_value = d;
-        }
-        std::string tostring() {
-            char temp[100];
-            sprintf(temp, "%f", m_value);
-            return std::string(temp);
-        }
-    private :
-        double m_value;
-};
-
-class BoolValue : public Value {
-    public:
-        BoolValue(bool b) {
-            m_value = b;
-        }
-        std::string tostring() {
-            if(m_value) 
-                return "true";
-            else
-                return "false";
-        }
-    private:
-        bool m_value;
-};
-
-class IntValue : public Value {
-    public:
-        IntValue(int i) {
-            m_value = i;
-        }
-        std::string tostring() {
-            char temp[100];
-            sprintf(temp, "%d", m_value);
-            return std::string(temp);
-        }
-    private :
-        int m_value;
-};
 
 class Enveronment {
     public:
@@ -93,19 +31,20 @@ class ASTNode{
     public:
         std::vector<ASTNode*> m_children;
 
+        virtual Value* eval(Enveronment* env = NULL) = 0;
+};
+
+class BlockNode : public ASTNode {
+    public:
         virtual Value* eval(Enveronment* env = NULL) {
-
-            if (! env) {
+            if (!env) 
                 env = new Enveronment;
-            }
 
-            Value* val = NULL;
-            for(std::vector<ASTNode*>::iterator it =  m_children.begin(); it != m_children.end(); 
-                    it++)
-            {
-                val = (*it)->eval(env);
+            Value* value = NULL;
+            for(int i = 0; i < m_children.size(); i++) {
+                value = children(i)->eval(env);
             }
-            return val;
+            return value;
         }
 };
 
@@ -126,6 +65,9 @@ class UnopNode : public ASTNode {
     public:
         UnopNode(Token* token) {
             m_op = token;
+        }
+        virtual Value* eval(Enveronment* env = NULL) {
+            return new StringValue(m_op->tostring());
         }
 
     private:
@@ -236,7 +178,6 @@ class AssignNode : public ASTNode {
             for(int i = 0; i < (int)m_vars.size(); i++) {
 
                 env->value[m_vars[i]->eval()->tostring()] = m_exps[i]->eval();
-                cout << m_vars[i]->eval()->tostring() << " = " << m_exps[i]->eval()->tostring() << endl;
             }
             return NULL;
         }
@@ -247,7 +188,136 @@ class AssignNode : public ASTNode {
 };
 
 
+class FieldListNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class FunctionBodyNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class FunctionCallNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
 
+class ExpNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class ExplistNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class NamelistNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class VarNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class VarlistNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class FuncNameNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class LabelNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class RetNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class FunctionNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class IfNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class CondNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class RepeatNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+class WhileNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+
+class DoNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
+
+
+class GotoNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env = NULL) {
+            Value* value = NULL;
+            return value;
+        }
+};
 
 
 

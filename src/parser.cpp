@@ -121,10 +121,7 @@ Token* Parser::getTokenFromOffset(int offset) {
 
 
 ASTNode* Parser::Parse() {
-    m_root = new ASTNode();
-    while( ASTNode* block = chunk() ) {
-        m_root->addChild(block);
-    }
+    m_root = chunk();
     return m_root;
 }
 
@@ -169,7 +166,7 @@ ASTNode* Parser::block() {
         return NULL;
     enter("block");
 
-    ASTNode* node = new ASTNode;
+    ASTNode* node = new BlockNode;
     if (!match("return")) {
         while( ASTNode* stat_node = stat() ) {
             node->addChild(stat_node);
@@ -188,7 +185,7 @@ ASTNode* Parser::block() {
 /* goto Name */
 ASTNode* Parser::goto_stat() {
     next("goto");
-    ASTNode* gotoNode = new ASTNode;
+    ASTNode* gotoNode = new GotoNode;
     NameNode* nameNode = name();
 
     gotoNode->addChild(nameNode);
@@ -198,7 +195,7 @@ ASTNode* Parser::goto_stat() {
 /*      // do block end  */
 ASTNode* Parser::do_stat() {
     enter("do");
-    ASTNode* doNode = new ASTNode;
+    ASTNode* doNode = new DoNode;
     next("do");
 
     ASTNode* blockNode = block();
@@ -213,7 +210,7 @@ ASTNode* Parser::do_stat() {
 /* while exp do block end | */
 ASTNode* Parser::while_stat() {
     next("while"); // while
-    ASTNode* whileNode = new ASTNode;
+    ASTNode* whileNode = new WhileNode;
     ASTNode* expNode = exp();
 
     next("do"); // do
@@ -233,7 +230,7 @@ ASTNode* Parser::repeat_stat() {
     enter("repeat");
 
     next("repeat");
-    ASTNode* repeatNode = new ASTNode;
+    ASTNode* repeatNode = new RepeatNode;
     ASTNode* blockNode = block();
     next("until");
     ASTNode* expNode = exp();
@@ -247,10 +244,10 @@ ASTNode* Parser::repeat_stat() {
 ASTNode* Parser::if_stat() {
     enter("if");
 
-    ASTNode* ifNode = new ASTNode;
+    ASTNode* ifNode = new IfNode;
     next("if");
 
-    ASTNode* pathNode = new ASTNode;
+    ASTNode* pathNode = new CondNode;
 
     ASTNode* condNode = exp();
     next("then"); // then
@@ -262,7 +259,7 @@ ASTNode* Parser::if_stat() {
 
     while(match("elseif")) {
         next("elseif");
-        ASTNode* pathNode = new ASTNode;
+        ASTNode* pathNode = new CondNode;
 
         ASTNode* condNode = exp();
         next("then"); // then
@@ -274,7 +271,7 @@ ASTNode* Parser::if_stat() {
     }
     if(match("else")) {
         next("else");
-        ASTNode* pathNode = new ASTNode;
+        ASTNode* pathNode = new CondNode;
         ASTNode* condNode = NULL;
         ASTNode* blockNode = block();
         pathNode->addChild(condNode);
@@ -328,7 +325,7 @@ ASTNode* Parser::for_stat() {
 ASTNode* Parser::range_for_stat() {
     enter("range_for");
     next("for"); // for
-    ASTNode* forNode = new ASTNode;
+    ASTNode* forNode = new ForNode;
 
     ASTNode* namelistNode = namelist();
     forNode->addChild(namelistNode);
@@ -351,7 +348,7 @@ ASTNode* Parser::range_for_stat() {
 
 ASTNode* Parser::function_stat() {
     next("function");
-    ASTNode* node = new ASTNode;
+    ASTNode* node = new FunctionNode;
     //funcname
     node->addChild(funcname());
     node->addChild(funcbody());
@@ -365,7 +362,7 @@ ASTNode* Parser::local_function_stat() {
     next("local");
     next("function");
 
-    ASTNode* functionNode = new ASTNode;
+    ASTNode* functionNode = new FunctionNode;
     NameNode* nameNode = name();
 
     ASTNode* funcbodyNode = funcbody();
@@ -505,7 +502,7 @@ ASTNode* Parser::retstat() {
     next("return"); // eat key word 'return'
 
     ASTNode* explistNode = explist();
-    ASTNode* retStatNode = new ASTNode;
+    ASTNode* retStatNode = new RetNode;
     retStatNode->addChild(explistNode);
 
     if (match(Token::SEMICOLON)) {
@@ -524,7 +521,7 @@ ASTNode* Parser::label() {
     enter("label");
     next(Token::LABEL);
 
-    ASTNode* labelNode = new ASTNode;
+    ASTNode* labelNode = new LabelNode;
     labelNode->addChild(name());
     next(Token::ID);
     next(Token::LABEL);
@@ -538,7 +535,7 @@ ASTNode* Parser::label() {
  */
 ASTNode* Parser::funcname() {
     enter("funcname");
-    ASTNode* node = new ASTNode();
+    ASTNode* node = new FuncNameNode();
     node->addChild(name());
 
     while(match(Token::DOT)) {
@@ -560,7 +557,7 @@ ASTNode* Parser::funcname() {
 ASTNode* Parser::varlist() {
     enter("varlist");
 
-    ASTNode* varlistNode = new ASTNode;
+    ASTNode* varlistNode = new VarlistNode;
     ASTNode* varNode = var();
     varlistNode->addChild(varNode);
 
@@ -588,7 +585,7 @@ ASTNode* Parser::var() {
         node = name();
 
     } else if(match(Token::LP)) {
-        node = new ASTNode;
+        node = new VarNode;
 
         next(Token::LP);
         ASTNode* expNode = exp();
@@ -651,7 +648,7 @@ bool Parser::_var(ASTNode* prefix) {
 ASTNode* Parser::namelist() {
     enter("namelist");
 
-    ASTNode* namelistNode = new ASTNode;
+    ASTNode* namelistNode = new NamelistNode;
 
     NameNode* nameNode = name();
 
@@ -675,7 +672,7 @@ ASTNode* Parser::namelist() {
 ASTNode* Parser::explist() {
     enter("explist");
 
-    ASTNode* explistNode = new ASTNode;
+    ASTNode* explistNode = new ExplistNode;
     ASTNode* expNode = exp();
     explistNode->addChild(expNode);
     while(match(Token::COMMA) && !match("...", 1) ){
@@ -703,7 +700,7 @@ ASTNode* Parser::exp() {
         return NULL; // 特殊处理
     }
 
-    ASTNode* expNode = new ASTNode;
+    ASTNode* expNode = new ExpNode;
     if (match ("nil") ||
             match ("false") ||
             match ("true") ||
@@ -821,7 +818,7 @@ bool Parser::_prefixexp(ASTNode* prefix) {
  */
 ASTNode* Parser::functioncall() {
     enter("functioncall");
-    ASTNode* node = new ASTNode;
+    ASTNode* node = new FunctionCallNode;
     ASTNode* prefixexpNode = prefixexp();
     node->addChild(prefixexpNode);
     if(match(Token::COLON)) {
@@ -888,7 +885,7 @@ ASTNode* Parser::functiondef() {
  */
 ASTNode* Parser::funcbody() {
     enter("funcbody");
-    ASTNode* node = new ASTNode;
+    ASTNode* node = new FunctionBodyNode;
     next(Token::LP);
     ASTNode* parlistNode = parlist();
     next(Token::RP);
@@ -946,7 +943,7 @@ ASTNode* Parser::tableconstructor() {
  */
 ASTNode* Parser::fieldlist() {
     enter("fieldlist");
-    ASTNode* node = new ASTNode;
+    ASTNode* node = new FieldListNode;
 
     ASTNode* fieldNode = field();
     node->addChild(fieldNode);
