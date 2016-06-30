@@ -45,7 +45,7 @@ void Parser::leave() {
 }
 
 Parser::Parser(Lexer* lexer) 
-    : m_root(NULL), level(-1) {
+    : level(-1), m_root(NULL) {
         m_pLexer = lexer;
         m_current =lexer->GetToken(); 
         m_lookAhead[0] = lexer->GetToken();
@@ -153,20 +153,20 @@ bool Parser::match(Token::Type type, int offset) {
 /*
  * chunk ::= block
  */
-ASTNode* Parser::chunk() {
-    ASTNode* node =  block();
+BlockNode* Parser::chunk() {
+    BlockNode* node =  block();
     return node;
 }
 
 /*
  * block ::= {stat} [retstat]
  */
-ASTNode* Parser::block() {
+BlockNode* Parser::block() {
     if (current() == NULL) 
         return NULL;
     enter("block");
 
-    ASTNode* node = new BlockNode;
+    BlockNode* node = new BlockNode;
     if (!match("return")) {
         while( ASTNode* stat_node = stat() ) {
             node->addChild(stat_node);
@@ -174,7 +174,7 @@ ASTNode* Parser::block() {
     }
     if (match("return")) /* TODO: retstat */
     {
-        ASTNode* retstat_node = retstat();
+        RetNode* retstat_node = retstat();
         node->addChild(retstat_node);
     }
     leave();
@@ -183,9 +183,9 @@ ASTNode* Parser::block() {
 
 
 /* goto Name */
-ASTNode* Parser::goto_stat() {
+GotoNode* Parser::goto_stat() {
     next("goto");
-    ASTNode* gotoNode = new GotoNode;
+    GotoNode* gotoNode = new GotoNode;
     NameNode* nameNode = name();
 
     gotoNode->addChild(nameNode);
@@ -193,29 +193,29 @@ ASTNode* Parser::goto_stat() {
 }
 
 /*      // do block end  */
-ASTNode* Parser::do_stat() {
+DoNode* Parser::do_stat() {
     enter("do");
-    ASTNode* doNode = new DoNode;
+    DoNode* doNode = new DoNode;
     next("do");
 
-    ASTNode* blockNode = block();
+    BlockNode* blockNode = block();
     next("end");
 
     doNode->addChild(blockNode);
 
     leave();
-    return blockNode;
+    return doNode;
 }
 
 /* while exp do block end | */
-ASTNode* Parser::while_stat() {
+WhileNode* Parser::while_stat() {
     next("while"); // while
-    ASTNode* whileNode = new WhileNode;
-    ASTNode* expNode = exp();
+    WhileNode* whileNode = new WhileNode;
+    ExpNode* expNode = exp();
 
     next("do"); // do
 
-    ASTNode* blockNode = block();
+    BlockNode* blockNode = block();
 
     next("end"); // end
 
@@ -226,14 +226,14 @@ ASTNode* Parser::while_stat() {
 }
 
 /* repeat block until exp */
-ASTNode* Parser::repeat_stat() {
+RepeatNode* Parser::repeat_stat() {
     enter("repeat");
 
     next("repeat");
-    ASTNode* repeatNode = new RepeatNode;
-    ASTNode* blockNode = block();
+    RepeatNode* repeatNode = new RepeatNode;
+    BlockNode* blockNode = block();
     next("until");
-    ASTNode* expNode = exp();
+    ExpNode* expNode = exp();
     repeatNode->addChild(blockNode);
     repeatNode->addChild(expNode);
 
@@ -241,40 +241,40 @@ ASTNode* Parser::repeat_stat() {
     return repeatNode;
 }
 
-ASTNode* Parser::if_stat() {
+IfNode* Parser::if_stat() {
     enter("if");
 
-    ASTNode* ifNode = new IfNode;
+    IfNode* ifNode = new IfNode;
     next("if");
 
-    ASTNode* pathNode = new CondNode;
+    CondNode* pathNode = new CondNode;
 
-    ASTNode* condNode = exp();
+    ExpNode* expNode = exp();
     next("then"); // then
-    ASTNode* blockNode = block();
-    pathNode->addChild(condNode);
+    BlockNode* blockNode = block();
+    pathNode->addChild(expNode);
     pathNode->addChild(blockNode);
 
     ifNode->addChild(pathNode);
 
     while(match("elseif")) {
         next("elseif");
-        ASTNode* pathNode = new CondNode;
+        CondNode* pathNode = new CondNode;
 
-        ASTNode* condNode = exp();
+        ExpNode* expNode = exp();
         next("then"); // then
-        ASTNode* blockNode = block();
-        pathNode->addChild(condNode);
+        BlockNode* blockNode = block();
+        pathNode->addChild(expNode);
         pathNode->addChild(blockNode);
 
         ifNode->addChild(pathNode);
     }
     if(match("else")) {
         next("else");
-        ASTNode* pathNode = new CondNode;
-        ASTNode* condNode = NULL;
+        CondNode* pathNode = new CondNode;
+
         ASTNode* blockNode = block();
-        pathNode->addChild(condNode);
+
         pathNode->addChild(blockNode);
 
         ifNode->addChild(pathNode);
@@ -287,7 +287,7 @@ ASTNode* Parser::if_stat() {
 }
 
 /* for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |  */
-ASTNode* Parser::for_stat() {
+ForNode* Parser::for_stat() {
     enter("for_stat");
     next("for"); // for
 
@@ -298,22 +298,22 @@ ASTNode* Parser::for_stat() {
 
     next(Token::ASSIGN); // =
 
-    ASTNode* fromExpNode = exp();
+    ExpNode* fromExpNode = exp();
     forNode->setFrom(fromExpNode);
 
     next(Token::COMMA);
 
-    ASTNode* toExpNode = exp();
+    ExpNode* toExpNode = exp();
     forNode->setTo(toExpNode);
 
     if(match(Token::COMMA) ) {
         next(Token::COMMA);
-        ASTNode* stepExpNode = exp();
+        ExpNode* stepExpNode = exp();
         forNode->setStep(stepExpNode);
     }
     next("do"); // do
 
-    ASTNode* blockNode = block();
+    BlockNode* blockNode = block();
     forNode->setBlock(blockNode);
 
     next("end"); // end
@@ -322,22 +322,22 @@ ASTNode* Parser::for_stat() {
 }
 
 /* for namelist in explist do block end | */
-ASTNode* Parser::range_for_stat() {
+ForNode* Parser::range_for_stat() {
     enter("range_for");
     next("for"); // for
-    ASTNode* forNode = new ForNode;
+    ForNode* forNode = new ForNode;
 
-    ASTNode* namelistNode = namelist();
+    NameListNode* namelistNode = namelist();
     forNode->addChild(namelistNode);
 
     next("in"); // in
 
-    ASTNode* rangeNode = explist();
+    ExpListNode* rangeNode = explist();
     forNode->addChild(rangeNode);
 
     next("do"); // do
 
-    ASTNode* blockNode = block();
+    BlockNode* blockNode = block();
     forNode->addChild(blockNode);
 
     next("end"); // end
@@ -346,9 +346,9 @@ ASTNode* Parser::range_for_stat() {
     return forNode;
 }
 
-ASTNode* Parser::function_stat() {
+FunctionNode* Parser::function_stat() {
     next("function");
-    ASTNode* node = new FunctionNode;
+    FunctionNode* node = new FunctionNode;
     //funcname
     node->addChild(funcname());
     node->addChild(funcbody());
@@ -362,10 +362,10 @@ ASTNode* Parser::local_function_stat() {
     next("local");
     next("function");
 
-    ASTNode* functionNode = new FunctionNode;
+    FunctionNode* functionNode = new FunctionNode;
     NameNode* nameNode = name();
 
-    ASTNode* funcbodyNode = funcbody();
+    FunctionBodyNode* funcbodyNode = funcbody();
     functionNode->addChild(nameNode);
     functionNode->addChild(funcbodyNode);
 
@@ -479,7 +479,7 @@ ASTNode* Parser::stat() {
             }
 
             next(Token::ASSIGN); 
-            ASTNode* explistNode = explist();
+            ExpListNode* explistNode = explist();
 
             for(int i = 0; i < explistNode->children_count(); i++) {
                 assignNode->addExp(explistNode->children(i));
@@ -490,19 +490,22 @@ ASTNode* Parser::stat() {
             return assignNode;
         }
     }
+    leave();
+    return NULL;
 
 }
 
 /*
  * retstat ::= return [explist] [‘;’]
  */
-ASTNode* Parser::retstat() {
+RetNode* Parser::retstat() {
     enter("retstat");
 
     next("return"); // eat key word 'return'
 
-    ASTNode* explistNode = explist();
-    ASTNode* retStatNode = new RetNode;
+    RetNode* retStatNode = new RetNode;
+
+    ExpListNode* explistNode = explist();
     retStatNode->addChild(explistNode);
 
     if (match(Token::SEMICOLON)) {
@@ -517,11 +520,11 @@ ASTNode* Parser::retstat() {
 /*
  * label ::= ‘::’ Name ‘::’
  */
-ASTNode* Parser::label() {
+LabelNode* Parser::label() {
     enter("label");
     next(Token::LABEL);
 
-    ASTNode* labelNode = new LabelNode;
+    LabelNode* labelNode = new LabelNode;
     labelNode->addChild(name());
     next(Token::ID);
     next(Token::LABEL);
@@ -533,9 +536,9 @@ ASTNode* Parser::label() {
 /*
  * funcname ::= Name {‘.’ Name} [‘:’ Name]
  */
-ASTNode* Parser::funcname() {
+FuncNameNode* Parser::funcname() {
     enter("funcname");
-    ASTNode* node = new FuncNameNode();
+    FuncNameNode* node = new FuncNameNode();
     node->addChild(name());
 
     while(match(Token::DOT)) {
@@ -554,10 +557,10 @@ ASTNode* Parser::funcname() {
 /*
  * varlist ::= var {‘,’ var}
  */
-ASTNode* Parser::varlist() {
+VarListNode* Parser::varlist() {
     enter("varlist");
 
-    ASTNode* varlistNode = new VarlistNode;
+    VarListNode* varlistNode = new VarListNode;
     ASTNode* varNode = var();
     varlistNode->addChild(varNode);
 
@@ -645,10 +648,10 @@ bool Parser::_var(ASTNode* prefix) {
 /*
  * namelist ::= Name {‘,’ Name}
  */
-ASTNode* Parser::namelist() {
+NameListNode* Parser::namelist() {
     enter("namelist");
 
-    ASTNode* namelistNode = new NamelistNode;
+    NameListNode* namelistNode = new NameListNode;
 
     NameNode* nameNode = name();
 
@@ -669,15 +672,15 @@ ASTNode* Parser::namelist() {
 /*
  * explist ::= exp {‘,’ exp}
  */
-ASTNode* Parser::explist() {
+ExpListNode* Parser::explist() {
     enter("explist");
 
-    ASTNode* explistNode = new ExplistNode;
-    ASTNode* expNode = exp();
+    ExpListNode* explistNode = new ExpListNode;
+    ExpNode* expNode = exp();
     explistNode->addChild(expNode);
     while(match(Token::COMMA) && !match("...", 1) ){
         next(Token::COMMA);
-        ASTNode* expNode = exp();
+        ExpNode* expNode = exp();
         explistNode->addChild(expNode);
     }
     leave();
@@ -693,14 +696,14 @@ ASTNode* Parser::explist() {
  *         LiteralString  | '...'  | functiondef   |
  *         prefixexp  | tableconstructor  | unop exp )  `exp
  */
-ASTNode* Parser::exp() {
+ExpNode* Parser::exp() {
     enter("exp");
 
     if(match("end")) {
         return NULL; // 特殊处理
     }
 
-    ASTNode* expNode = new ExpNode;
+    ExpNode* expNode = new ExpNode;
     if (match ("nil") ||
             match ("false") ||
             match ("true") ||
@@ -728,7 +731,7 @@ ASTNode* Parser::exp() {
             UnopNode* testNode = unop();
             if(testNode) { // is unop
                 expNode->addChild( testNode );
-                ASTNode* expNode2 = exp();
+                ExpNode* expNode2 = exp();
                 expNode->addChild( expNode2 );
 
             } else {
@@ -845,7 +848,7 @@ ASTNode* Parser::args() {
     if( match(Token::LP) ) {
         next(Token::LP);
         if(!match(Token::RP)) {
-            ASTNode* explistNode = explist();
+            ExpListNode* explistNode = explist();
             next(Token::RP);
             leave();
             return explistNode;
@@ -883,14 +886,14 @@ ASTNode* Parser::functiondef() {
 /*
  * funcbody ::= ‘(’ [parlist] ‘)’ block end
  */
-ASTNode* Parser::funcbody() {
+FunctionBodyNode* Parser::funcbody() {
     enter("funcbody");
-    ASTNode* node = new FunctionBodyNode;
+    FunctionBodyNode* node = new FunctionBodyNode;
     next(Token::LP);
     ASTNode* parlistNode = parlist();
     next(Token::RP);
 
-    ASTNode* blockNode = block();
+    BlockNode* blockNode = block();
 
     next(Token::ID); // "end"
     node->addChild(parlistNode);
@@ -904,7 +907,7 @@ ASTNode* Parser::funcbody() {
  */
 ASTNode* Parser::parlist() {
     enter("parlist");
-    ASTNode* namelistNode = NULL;
+    NameListNode* namelistNode = NULL;
     if(match(Token::RP)) {
         leave();
         return NULL;
@@ -941,11 +944,11 @@ ASTNode* Parser::tableconstructor() {
 /*
  * fieldlist ::= field {fieldsep field} [fieldsep]
  */
-ASTNode* Parser::fieldlist() {
+FieldListNode* Parser::fieldlist() {
     enter("fieldlist");
-    ASTNode* node = new FieldListNode;
+    FieldListNode* node = new FieldListNode;
 
-    ASTNode* fieldNode = field();
+    FieldNode* fieldNode = field();
     node->addChild(fieldNode);
     while(fieldsep()) {
         if ( !match(Token::RB) ) {
@@ -960,26 +963,26 @@ ASTNode* Parser::fieldlist() {
 /*
  * field ::= ‘[’ exp ‘]’ ‘=’ exp | Name ‘=’ exp | exp
  */
-ASTNode* Parser::field() {
+FieldNode* Parser::field() {
     enter("field");
     FieldNode* fieldNode = new FieldNode;
 
     if (match(Token::LBRACKET) ) {
         next(Token::LBRACKET);
-        ASTNode* keyNode = exp();
+        ExpNode* keyNode = exp();
         next(Token::ASSIGN);
-        ASTNode* valueNode = exp();
+        ExpNode* valueNode = exp();
         fieldNode->setKey(keyNode);
-        fieldNode->setKey(valueNode);
+        fieldNode->setValue(valueNode);
     }
     else if (match(Token::ID) && match(Token::ASSIGN, 1)) {
         NameNode* keyNode = name();
         next(); // =
-        ASTNode* valueNode = exp();
+        ExpNode* valueNode = exp();
         fieldNode->setKey(keyNode);
         fieldNode->setValue(valueNode);
     } else {
-        ASTNode* keyNode = exp();
+        ExpNode* keyNode = exp();
         fieldNode->setKey(keyNode);
     }
     leave();

@@ -20,6 +20,7 @@ class Enveronment {
 
 class ASTNode{
     public:
+        virtual ~ASTNode() {}
 
         //children
         ASTNode* children(int i);
@@ -31,18 +32,26 @@ class ASTNode{
     public:
         std::vector<ASTNode*> m_children;
 
-        virtual Value* eval(Enveronment* env = NULL) = 0;
+        virtual Value* eval(Enveronment* env) = 0;
 };
 
+class ExpNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env) {
+            Value* value = new StringValue("<ExpNode>");
+            return value;
+        }
+};
 class BlockNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
             if (!env) 
                 env = new Enveronment;
 
-            Value* value = NULL;
+            Value* value;
             for(int i = 0; i < m_children.size(); i++) {
                 value = children(i)->eval(env);
+                std::cout << value->tostring() << std::endl;
             }
             return value;
         }
@@ -54,7 +63,10 @@ class NameNode : public ASTNode{
         NameNode(Token* token) {
             m_token = token;
         }
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
             return new StringValue(m_token->tostring());
         }
     private:
@@ -66,7 +78,10 @@ class UnopNode : public ASTNode {
         UnopNode(Token* token) {
             m_op = token;
         }
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
             return new StringValue(m_op->tostring());
         }
 
@@ -79,7 +94,10 @@ class LeafNode : public ASTNode {
         LeafNode(Token* token) {
             m_token = token;
         }
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
             return new StringValue(m_token->tostring());
         }
     private:
@@ -95,15 +113,18 @@ class FieldNode : public ASTNode {
         void setKey(ASTNode* key) {
             m_key = key;
         }
-        void setValue(ASTNode* value) {
+        void setValue(ExpNode* value) {
             m_value = value;
         }
-        virtual Value* eval(Enveronment* env = NULL) {
-            return NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            return new StringValue("<FieldNode>");
         }
     private:
         ASTNode* m_key;
-        ASTNode* m_value; // ExpNode
+        ExpNode* m_value; // ExpNode
 };
 
 class BinopNode : public ASTNode {
@@ -112,7 +133,10 @@ class BinopNode : public ASTNode {
             m_op = token;
         }
 
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
             return new StringValue("Binop");
         }
     private:
@@ -141,13 +165,13 @@ class ForNode : public ASTNode {
         void setBlock(ASTNode* block) {
             m_block = block;
         }
-        virtual Value* eval(Enveronment* env = NULL) {
-            m_from->eval();
-            m_to->eval();
+        virtual Value* eval(Enveronment* env) {
+            m_from->eval(env);
+            m_to->eval(env);
             if(m_step) {
-                m_step->eval();
+                m_step->eval(env);
             }
-            return m_block->eval();
+            return m_block->eval(env);
         }
     private:
         NameNode* m_name;
@@ -160,7 +184,7 @@ class ForNode : public ASTNode {
 
 class EmptyNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
             return new StringValue("empty");
         }
 };
@@ -173,13 +197,14 @@ class AssignNode : public ASTNode {
         void addExp(ASTNode* exp) {
             m_exps.push_back(exp);
         }
-        virtual Value* eval(Enveronment* env = NULL) {
+        virtual Value* eval(Enveronment* env) {
 
+            Value* value = NULL;
             for(int i = 0; i < (int)m_vars.size(); i++) {
-
-                env->value[m_vars[i]->eval()->tostring()] = m_exps[i]->eval();
+                value = m_exps[i]->eval(env);
+                env->value[m_vars[i]->eval(env)->tostring()] = value;
             }
-            return NULL;
+            return value;
         }
 
     private:
@@ -190,122 +215,164 @@ class AssignNode : public ASTNode {
 
 class FieldListNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<FieldListNode>");
             return value;
         }
 };
 class FunctionBodyNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<FunctionBodyNode>");
             return value;
         }
 };
 class FunctionCallNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<FunctionCallNode>");
             return value;
         }
 };
 
-class ExpNode : public ASTNode {
+
+class ExpListNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<ExpListNode>");
             return value;
         }
 };
-class ExplistNode : public ASTNode {
+class NameListNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
-            return value;
-        }
-};
-class NamelistNode : public ASTNode {
-    public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<NameListNode>");
             return value;
         }
 };
 class VarNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<VarNode>");
             return value;
         }
 };
-class VarlistNode : public ASTNode {
+class VarListNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<VarListNode>");
             return value;
         }
 };
 class FuncNameNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<FuncNameNode>");
             return value;
         }
 };
 class LabelNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<LabelNode>");
             return value;
         }
 };
 class RetNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<RetNode>");
             return value;
         }
 };
 class FunctionNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<FunctionNode>");
             return value;
         }
 };
 class IfNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<IfNode>");
             return value;
         }
 };
 class CondNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<CondNode>");
             return value;
         }
 };
 class RepeatNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<RepeatNode>");
             return value;
         }
 };
 class WhileNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<WhileNode>");
             return value;
         }
 };
 
 class DoNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<DoNode>");
             return value;
         }
 };
@@ -313,8 +380,11 @@ class DoNode : public ASTNode {
 
 class GotoNode : public ASTNode {
     public:
-        virtual Value* eval(Enveronment* env = NULL) {
-            Value* value = NULL;
+        virtual Value* eval(Enveronment* env) {
+            for(int i = 0; i < m_children.size(); i++) {
+                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            }
+            Value* value = new StringValue("<GotoNode>");
             return value;
         }
 };

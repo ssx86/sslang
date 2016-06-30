@@ -44,42 +44,42 @@ class Parser
         Token* m_lookAhead[2];
 
     private:
-        ASTNode* chunk() ;
-        ASTNode* block() ;
+        BlockNode* chunk() ;
+        BlockNode* block() ;
         ASTNode* stat() ;
 
-        ASTNode* goto_stat();
-        ASTNode* do_stat();
-        ASTNode* while_stat();
-        ASTNode* repeat_stat();
-        ASTNode* if_stat();
-        ASTNode* for_stat();
-        ASTNode* range_for_stat();
-        ASTNode* function_stat();
+        GotoNode* goto_stat();
+        DoNode* do_stat();
+        WhileNode* while_stat();
+        RepeatNode* repeat_stat();
+        IfNode* if_stat();
+        ForNode* for_stat();
+        ForNode* range_for_stat();
+        FunctionNode* function_stat();
         ASTNode* local_function_stat();
         ASTNode* local_namelist_stat();
 
 
-        ASTNode* retstat() ;
-        ASTNode* label() ;
-        ASTNode* funcname() ;
-        ASTNode* varlist() ;
+        RetNode* retstat() ;
+        LabelNode* label() ;
+        FuncNameNode* funcname() ;
+        VarListNode* varlist() ;
         ASTNode* var() ;
         bool _var(ASTNode* prefix) ;
-        ASTNode* namelist() ;
-        ASTNode* explist() ;
-        ASTNode* exp() ;
+        NameListNode* namelist() ;
+        ExpListNode* explist() ;
+        ExpNode* exp() ;
         bool _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
         bool _prefixexp(ASTNode* prefix) ;
         ASTNode* functioncall() ;
         ASTNode* args() ;
         ASTNode* functiondef() ;
-        ASTNode* funcbody() ;
+        FunctionBodyNode* funcbody() ;
         ASTNode* parlist() ;
         ASTNode* tableconstructor() ;
-        ASTNode* fieldlist() ;
-        ASTNode* field() ;
+        FieldListNode* fieldlist() ;
+        FieldNode* field() ;
         bool fieldsep() ;
         ASTNode* binop() ;
         UnopNode* unop() ;

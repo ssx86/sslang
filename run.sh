@@ -1,11 +1,16 @@
 make &&
 
-./sslang ./test/syntax.ss 
+echo "\ntesting : syntax\n"
+./sslang ./test/syntax.ss true
 
-./sslang ./test/lua.ss 
+echo "\ntesting : lua\n"
+./sslang ./test/lua.ss true
 
-./sslang ./test/case1.ss 
+echo "\ntesting : case1\n"
+./sslang ./test/case1.ss true
 
-./sslang ./test/tooshort.ss
+echo "\ntesting : tooshort\n"
+./sslang ./test/tooshort.ss true
 
+echo "\ntesting : eval\n"
 ./sslang ./test/eval.ss true

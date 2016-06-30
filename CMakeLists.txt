@@ -16,4 +16,4 @@ ${DIR_SRCS}
 ADD_EXECUTABLE(sslang ${SSLANG})
 #add link library
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -g -pipe -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-std=c++11 -g -pipe -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-sign-compare")
