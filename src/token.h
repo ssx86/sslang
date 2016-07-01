@@ -60,6 +60,10 @@ class Token
 
         Type m_type;
 
+        Type type() {
+            return m_type;
+        }
+
         bool isType(Type t) {
             return m_type == t;
         }

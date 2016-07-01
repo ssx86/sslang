@@ -65,13 +65,13 @@ class Parser
         FuncNameNode* funcname() ;
         VarListNode* varlist() ;
         ASTNode* var() ;
-        bool _var(ASTNode* prefix) ;
+        ASTNode* _var(ASTNode* prefix) ;
         NameListNode* namelist() ;
         ExpListNode* explist() ;
-        ExpNode* exp() ;
-        bool _exp(ASTNode* prefix) ;
+        ASTNode* exp() ;
+        ASTNode* _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
-        bool _prefixexp(ASTNode* prefix) ;
+        ASTNode* _prefixexp(ASTNode* prefix) ;
         ASTNode* functioncall() ;
         ASTNode* args() ;
         ASTNode* functiondef() ;
@@ -81,7 +81,7 @@ class Parser
         FieldListNode* fieldlist() ;
         FieldNode* field() ;
         bool fieldsep() ;
-        ASTNode* binop() ;
+        Token* binop() ;
         UnopNode* unop() ;
         NameNode* name();
         LeafNode* leaf();

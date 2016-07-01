@@ -10,11 +10,12 @@
 
 using namespace std;
 
-    
+Value* execute(Token* op, Value* left, Value* right, Value::Type retType);
 
 class Enveronment {
     public:
-    map<std::string, Value*> value;
+    map<std::string, Value*> names;
+    typedef map<std::string, Value*>::iterator iterator;
     Enveronment* next;
 };
 
@@ -35,13 +36,6 @@ class ASTNode{
         virtual Value* eval(Enveronment* env) = 0;
 };
 
-class ExpNode : public ASTNode {
-    public:
-        virtual Value* eval(Enveronment* env) {
-            Value* value = new StringValue("<ExpNode>");
-            return value;
-        }
-};
 class BlockNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
@@ -61,16 +55,20 @@ class BlockNode : public ASTNode {
 class NameNode : public ASTNode{
     public:
         NameNode(Token* token) {
-            m_token = token;
+            m_name = token->tostring();
         }
         virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            return new StringValue(m_token->tostring());
+            Enveronment::iterator it = env->names.find(m_name);
+            if (it != env->names.end())
+                return it->second;
+            else
+                return new StringValue("<NO Value>");
+        }
+        std::string name() {
+            return m_name;
         }
     private:
-        Token* m_token;
+    std::string m_name;
 };
 
 class UnopNode : public ASTNode {
@@ -91,17 +89,26 @@ class UnopNode : public ASTNode {
 
 class LeafNode : public ASTNode {
     public:
-        LeafNode(Token* token) {
-            m_token = token;
+        LeafNode() { //TODO value nil!!!
+            m_value = new StringValue("nil");
+        }
+        LeafNode(std::string &s) {
+            m_value = new StringValue(s);
+        }
+        LeafNode(int i) {
+            m_value = new IntValue(i);
+        }
+        LeafNode(double d) {
+            m_value = new DoubleValue(d);
+        }
+        LeafNode(bool b) {
+            m_value = new BoolValue(b);
         }
         virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            return new StringValue(m_token->tostring());
+            return m_value;
         }
     private:
-        Token* m_token;
+        Value* m_value;
 };
 
 class FieldNode : public ASTNode {
@@ -113,7 +120,7 @@ class FieldNode : public ASTNode {
         void setKey(ASTNode* key) {
             m_key = key;
         }
-        void setValue(ExpNode* value) {
+        void setValue(ASTNode* value) {
             m_value = value;
         }
         virtual Value* eval(Enveronment* env) {
@@ -124,23 +131,44 @@ class FieldNode : public ASTNode {
         }
     private:
         ASTNode* m_key;
-        ExpNode* m_value; // ExpNode
+        ASTNode* m_value; // ExpNode
 };
+
 
 class BinopNode : public ASTNode {
     public:
-        BinopNode(Token* token) {
+        BinopNode(Token* token) : m_left(NULL), m_right(NULL) {
             m_op = token;
+        }
+        void setLeft(ASTNode* left) {
+            m_left = left;
+        }
+        void setRight(ASTNode* right) {
+            m_right = right;
         }
 
         virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            return new StringValue("Binop");
+            Value* leftValue = m_left->eval(env);
+            Value* rightValue = m_right->eval(env);
+
+            if(Value::INT == leftValue->type() && Value::INT == rightValue->type() ) {
+                return execute(m_op, leftValue, rightValue, Value::INT);
+            } else if (Value::DOUBLE == leftValue->type() && 
+                    (Value::INT == rightValue->type() || Value::DOUBLE == rightValue->type())) {
+                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
+            } else if (Value::DOUBLE == rightValue->type() && 
+                    (Value::INT == leftValue->type() || Value::DOUBLE == leftValue->type())) {
+                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
+            } else if (Value::DOUBLE == leftValue->type() && Value::DOUBLE == rightValue->type()) {
+                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
+            } else if (Value::STRING == leftValue->type() && Value::STRING == rightValue->type()) {
+                return execute(m_op, leftValue, rightValue, Value::STRING);
+            } else return new StringValue("BinopNode Eval Error!");
         }
     private:
         Token* m_op;
+        ASTNode* m_left;
+        ASTNode* m_right;
 };
 
 class ForNode : public ASTNode {
@@ -201,8 +229,16 @@ class AssignNode : public ASTNode {
 
             Value* value = NULL;
             for(int i = 0; i < (int)m_vars.size(); i++) {
-                value = m_exps[i]->eval(env);
-                env->value[m_vars[i]->eval(env)->tostring()] = value;
+                NameNode* pName = dynamic_cast<NameNode*>(m_vars[i]);
+                if(pName) {
+                    std::string varName = pName->name();
+                    value = m_exps[i]->eval(env);
+                    env->names[varName] = value;
+                    std::cout << "Assign: " << varName << " := " << value->tostring() << std::endl;
+                } else {
+                    std::cout << "error reading var name" << std::endl;
+                }
+
             }
             return value;
         }

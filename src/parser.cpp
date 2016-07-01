@@ -211,7 +211,7 @@ DoNode* Parser::do_stat() {
 WhileNode* Parser::while_stat() {
     next("while"); // while
     WhileNode* whileNode = new WhileNode;
-    ExpNode* expNode = exp();
+    ASTNode* expNode = exp();
 
     next("do"); // do
 
@@ -233,7 +233,7 @@ RepeatNode* Parser::repeat_stat() {
     RepeatNode* repeatNode = new RepeatNode;
     BlockNode* blockNode = block();
     next("until");
-    ExpNode* expNode = exp();
+    ASTNode* expNode = exp();
     repeatNode->addChild(blockNode);
     repeatNode->addChild(expNode);
 
@@ -249,7 +249,7 @@ IfNode* Parser::if_stat() {
 
     CondNode* pathNode = new CondNode;
 
-    ExpNode* expNode = exp();
+    ASTNode* expNode = exp();
     next("then"); // then
     BlockNode* blockNode = block();
     pathNode->addChild(expNode);
@@ -261,7 +261,7 @@ IfNode* Parser::if_stat() {
         next("elseif");
         CondNode* pathNode = new CondNode;
 
-        ExpNode* expNode = exp();
+        ASTNode* expNode = exp();
         next("then"); // then
         BlockNode* blockNode = block();
         pathNode->addChild(expNode);
@@ -298,17 +298,17 @@ ForNode* Parser::for_stat() {
 
     next(Token::ASSIGN); // =
 
-    ExpNode* fromExpNode = exp();
+    ASTNode* fromExpNode = exp();
     forNode->setFrom(fromExpNode);
 
     next(Token::COMMA);
 
-    ExpNode* toExpNode = exp();
+    ASTNode* toExpNode = exp();
     forNode->setTo(toExpNode);
 
     if(match(Token::COMMA) ) {
         next(Token::COMMA);
-        ExpNode* stepExpNode = exp();
+        ASTNode* stepExpNode = exp();
         forNode->setStep(stepExpNode);
     }
     next("do"); // do
@@ -618,7 +618,7 @@ ASTNode* Parser::var() {
 /*
  * `var ::= `prefixexp [ exp ] `var | `prefixexp . Name `var | nil
  */
-bool Parser::_var(ASTNode* prefix) {
+ASTNode* Parser::_var(ASTNode* prefix) {
     enter("_var");
     _prefixexp(prefix);
 
@@ -636,13 +636,13 @@ bool Parser::_var(ASTNode* prefix) {
     else
     {
         leave();
-        return false;
+        return prefix;
     }
 
     _var(prefix);
 
     leave();
-    return true;
+    return prefix;
 }
 
 /*
@@ -676,11 +676,11 @@ ExpListNode* Parser::explist() {
     enter("explist");
 
     ExpListNode* explistNode = new ExpListNode;
-    ExpNode* expNode = exp();
+    ASTNode* expNode = exp();
     explistNode->addChild(expNode);
     while(match(Token::COMMA) && !match("...", 1) ){
         next(Token::COMMA);
-        ExpNode* expNode = exp();
+        ASTNode* expNode = exp();
         explistNode->addChild(expNode);
     }
     leave();
@@ -696,71 +696,66 @@ ExpListNode* Parser::explist() {
  *         LiteralString  | '...'  | functiondef   |
  *         prefixexp  | tableconstructor  | unop exp )  `exp
  */
-ExpNode* Parser::exp() {
+ASTNode* Parser::exp() {
     enter("exp");
 
     if(match("end")) {
         return NULL; // 特殊处理
     }
 
-    ExpNode* expNode = new ExpNode;
-    if (match ("nil") ||
-            match ("false") ||
-            match ("true") ||
-            match (Token::STRING) ||
-            match (Token::INT) ||
-            match (Token::DOUBLE) ||
-            match ("...")  // TODO
-       )
-    {  
-        LeafNode* node = leaf();
-        expNode->addChild(node);
+    ASTNode* expNode = NULL;
+    LeafNode* leafNode = leaf();
+    if (leafNode) { // nil | false | true | Numeral | LiteralString | '...'
+        expNode = leafNode;
     } else {
         // functiondef, prefixexp, tableconstructor, unop
         if (match(Token::LB)) {
             //table
             ASTNode* tableNode = tableconstructor();
-            expNode->addChild(tableNode);
+            expNode = tableNode;
         } else if (match("function")) {
             //func
             ASTNode* functiondefNode = functiondef();
-            expNode->addChild(functiondefNode);
+            expNode = functiondefNode;
         } 
         // unop
         else {
             UnopNode* testNode = unop();
             if(testNode) { // is unop
-                expNode->addChild( testNode );
-                ExpNode* expNode2 = exp();
+                expNode = testNode ;
+                ASTNode* expNode2 = exp();
                 expNode->addChild( expNode2 );
 
             } else {
                 ASTNode* prefixExpNode = prefixexp();
-                expNode->addChild(prefixExpNode);
+                expNode = prefixExpNode;
             }
         }
     }
-    _exp(expNode);
+    ASTNode* node = _exp(expNode);
 
     leave();
-    return expNode;
+    return node;
 }
 
 /* 
  * `exp ::= binop exp | nil
  */
-bool Parser::_exp(ASTNode* prefix) {
+ASTNode* Parser::_exp(ASTNode* prefix) {
     enter("_exp");
-    ASTNode* testNode = binop();
-    if (testNode) {
-        prefix->addChild(testNode);
+    Token* opToken = binop();
+
+    if (opToken) {
+        BinopNode* binopNode = new BinopNode(opToken);
+        binopNode->setLeft(prefix);
+
         ASTNode* expNode = exp();
-        prefix->addChild(expNode);
+        binopNode->setRight(expNode);
         leave();
-        return true;
+        return binopNode;
     } else {
         leave();
-        return false;
+        return prefix;
     }
 }
 
@@ -787,7 +782,7 @@ ASTNode* Parser::prefixexp() {
 /*
  * `prefixexp ::= args `prefixexp  | ':' Name args `prefixexp | ""
  */
-bool Parser::_prefixexp(ASTNode* prefix) {
+ASTNode* Parser::_prefixexp(ASTNode* prefix) {
     enter("_prefixexp");
     if ( match (Token::COLON) ) {
         next();
@@ -797,19 +792,19 @@ bool Parser::_prefixexp(ASTNode* prefix) {
         _prefixexp(prefix);
         leave();
 
-        return true;
+        return prefix;
     } else {
         ASTNode* argsNode = args();
         if (argsNode) {
             prefix->addChild(argsNode);
             _prefixexp(prefix);
             leave();
-            return true;
+            return prefix;
         }
         else
         {
             leave();
-            return false;
+            return prefix;
         }
     }
 
@@ -969,20 +964,20 @@ FieldNode* Parser::field() {
 
     if (match(Token::LBRACKET) ) {
         next(Token::LBRACKET);
-        ExpNode* keyNode = exp();
+        ASTNode* keyNode = exp();
         next(Token::ASSIGN);
-        ExpNode* valueNode = exp();
+        ASTNode* valueNode = exp();
         fieldNode->setKey(keyNode);
         fieldNode->setValue(valueNode);
     }
     else if (match(Token::ID) && match(Token::ASSIGN, 1)) {
         NameNode* keyNode = name();
         next(); // =
-        ExpNode* valueNode = exp();
+        ASTNode* valueNode = exp();
         fieldNode->setKey(keyNode);
         fieldNode->setValue(valueNode);
     } else {
-        ExpNode* keyNode = exp();
+        ASTNode* keyNode = exp();
         fieldNode->setKey(keyNode);
     }
     leave();
@@ -1008,7 +1003,7 @@ bool Parser::fieldsep() {
  * ‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ | 
  * and | or
  */
-ASTNode* Parser::binop() {
+Token* Parser::binop() {
     enter("binop");
     if(match(Token::ADD) ||
             match(Token::SUB) ||
@@ -1035,10 +1030,10 @@ ASTNode* Parser::binop() {
             match("and")
             ) 
             {
-                BinopNode* binopNode = new BinopNode(current());
+                Token* opToken = current();
                 next();
                 leave();
-                return binopNode;
+                return opToken;
             } else {
                 leave();
                 return NULL;
@@ -1072,9 +1067,28 @@ NameNode* Parser::name() {
 }
 
 LeafNode* Parser::leaf() {
-    LeafNode* leafNode = new LeafNode(current());
+
+    LeafNode* leafNode = NULL;
+    if (match ("nil") ) {
+        leafNode = new LeafNode();
+    } else if( match("false")) {
+        leafNode = new LeafNode(false);
+    } else if (match("true")) {
+        leafNode = new LeafNode(true);
+    } else if (match(Token::STRING) ) {
+        leafNode = new LeafNode(current()->svalue);
+    } else if (match(Token::INT) ) {
+        leafNode = new LeafNode(current()->ivalue);
+    } else if (match(Token::DOUBLE) ) {
+        leafNode = new LeafNode(current()->dvalue);
+    } else if (match("...")) {
+        leafNode = new LeafNode("...");
+    } else {
+        return NULL;
+    }
     next();
     return leafNode;
+     
 }
 
 EmptyNode* Parser::empty() {

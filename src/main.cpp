@@ -34,11 +34,6 @@ std::istream* GetInput(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    bool do_eval = false;
-    if ( argc == 3 ) 
-    {
-        do_eval = true;
-    }
     std::istream* input = GetInput(argc, argv);
     std::string s;
 
@@ -49,15 +44,12 @@ int main(int argc, char* argv[])
     Parser parser(pLexer);
     ASTNode* root = parser.Parse();
 
-    if (do_eval) {
-        if (root)
-        {
-            Value* value = root->eval(NULL);
-            std::cout << value->tostring() << std::endl;
-        }
-        else
-            std::cout << "root not found" << std::endl;
+    if (root)
+    {
+        Value* value = root->eval(NULL);
     }
+    else
+        std::cout << "root not found" << std::endl;
 
     return 0;
 }

@@ -33,7 +33,7 @@ std::string Token::tostring() {
         case KEYWORD:
             return std::string("<KEY:") + svalue + ">";
         case ID:
-            return std::string("<") + svalue + ">";
+            return std::string("") + svalue;
         case STRING:
             return std::string("'") + svalue + "'";
         case INT:
