@@ -3,6 +3,7 @@
 #include "token.h"
 
 #include <cstdlib>
+#include <cassert>
 #include <iostream>
 
 #define DEBUG_ENTER 0
@@ -75,7 +76,7 @@ void Parser::do_next() {
             std::cout << "end of file" << std::endl;
             break;
         }
-    } while (m_current->isType(Token::NEWLINE) );
+	} while (m_current->isType(Token::NEWLINE) || m_current->isType(Token::COMMENT) );
 
     if(current()) {
 #if DEBUG_ENTER
@@ -700,7 +701,7 @@ ExpListNode* Parser::explist() {
 ASTNode* Parser::exp() {
     enter("exp");
 
-    if(match("end")) {
+	if(match("end") || match(Token::COMMENT)) {
         return NULL; // 特殊处理
     }
 
@@ -744,6 +745,7 @@ ASTNode* Parser::exp() {
  */
 ASTNode* Parser::_exp(ASTNode* prefix) {
     enter("_exp");
+	assert(!current()->isType(Token::COMMENT));
     Token* opToken = binop();
 
     if (opToken) {
