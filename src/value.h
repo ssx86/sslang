@@ -1,7 +1,24 @@
 #ifndef _SS_VALUE_H_
 #define _SS_VALUE_H_
 
+#include <map>
 #include <string>
+
+using namespace std;
+
+class Value;
+class Enveronment {
+    public:
+    map<std::string, Value*> names;
+    typedef map<std::string, Value*>::iterator iterator;
+    Enveronment* next;
+    void set(std::string name, Value* value) {
+        names[name] = value;
+    }
+    Value* get(std::string name) {
+        return names[name];
+    }
+};
 
 class IntValue;
 class DoubleValue;
@@ -17,6 +34,7 @@ class Value {
             DOUBLE, 
             STRING, 
             BOOL,
+            FUNC,
             DUMMY
         } Type;
 
@@ -103,6 +121,24 @@ class BoolValue : public Value {
 };
 
 class NilValue : public Value {
+};
+
+class FuncBodyNode;
+class FuncValue : public Value {
+    public:
+        FuncValue(FuncBodyNode* body) {
+            m_body = body;
+        }
+        Value* call(Enveronment* env);
+        
+    public:
+        FuncBodyNode* m_body;
+        std::string tostring() {
+            return "function value";
+        }
+        virtual Type type() {
+            return FUNC;
+        }
 };
 
 class IntValue : public Value {

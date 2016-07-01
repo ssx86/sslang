@@ -6,6 +6,8 @@ h = k / 5;
 
 d = i + j
 -- asdf
-function fib()
-return
+function fib(n)
+  return fib(n-1) + fib(n-2)
 end
+
+fib(4)

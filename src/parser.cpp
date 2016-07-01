@@ -351,8 +351,9 @@ FunctionNode* Parser::function_stat() {
     next("function");
     FunctionNode* node = new FunctionNode;
     //funcname
-    node->addChild(funcname());
-    node->addChild(funcbody());
+    node->setName(funcname());
+    node->setBody(funcbody());
+    cout << "oh yeah!!!!!!!!!!!!!!!!!!" << endl;
     leave();
     return node;
 }
@@ -366,7 +367,7 @@ ASTNode* Parser::local_function_stat() {
     FunctionNode* functionNode = new FunctionNode;
     NameNode* nameNode = name();
 
-    FunctionBodyNode* funcbodyNode = funcbody();
+    FuncBodyNode* funcbodyNode = funcbody();
     functionNode->addChild(nameNode);
     functionNode->addChild(funcbodyNode);
 
@@ -541,15 +542,15 @@ LabelNode* Parser::label() {
 FuncNameNode* Parser::funcname() {
     enter("funcname");
     FuncNameNode* node = new FuncNameNode();
-    node->addChild(name());
+    node->setName(name());
 
     while(match(Token::DOT)) {
         next();
-        node->addChild(name());
+        node->appendName(name());
     }
     if( match(Token::COLON) ) {
         next();
-        node->addChild(name());
+        node->appendName(name());
     }
 
     leave();
@@ -596,7 +597,7 @@ ASTNode* Parser::var() {
         ASTNode* expNode = exp();
         node->addChild(expNode);
 
-        _prefixexp(node);
+        node = _prefixexp(node);
 
         if(match(Token::LBRACKET)) {
             next(Token::LBRACKET);
@@ -622,7 +623,7 @@ ASTNode* Parser::var() {
  */
 ASTNode* Parser::_var(ASTNode* prefix) {
     enter("_var");
-    _prefixexp(prefix);
+    prefix = _prefixexp(prefix);
 
     //lookforward : [ .
     if (match(Token::LBRACKET)) {
@@ -776,7 +777,7 @@ ASTNode* Parser::prefixexp() {
         node = exp();
         next(Token::RP);
     }
-    _prefixexp(node);
+    node = _prefixexp(node);
 
     leave();
     return node;
@@ -792,17 +793,17 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
         prefix->addChild(name());
         ASTNode* argsNode = args();
         prefix->addChild(argsNode);
-        _prefixexp(prefix);
+        prefix = _prefixexp(prefix);
         leave();
 
         return prefix;
     } else {
         ASTNode* argsNode = args();
         if (argsNode) {
-            prefix->addChild(argsNode);
-            _prefixexp(prefix);
+            FuncCallNode* funcCallNode = functioncall(prefix, argsNode);
+            std::cout << "add function call !" << std::endl;
             leave();
-            return prefix;
+            return funcCallNode;
         }
         else
         {
@@ -817,17 +818,13 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
 /*
  * functioncall ::=  prefixexp args | prefixexp ‘:’ Name args 
  */
-ASTNode* Parser::functioncall() {
+FuncCallNode* Parser::functioncall(ASTNode* prefixexpNode, ASTNode* argsNode) {
     enter("functioncall");
-    ASTNode* node = new FunctionCallNode;
-    ASTNode* prefixexpNode = prefixexp();
-    node->addChild(prefixexpNode);
-    if(match(Token::COLON)) {
-        next(Token::COLON);
-        node->addChild(name());
-    }
-    ASTNode* argsNode = args();
-    node->addChild(argsNode);
+
+    std::cout << "got a function call ~~~~~~~~" << std::endl ;
+    FuncCallNode* node = new FuncCallNode;
+    node->setName(prefixexpNode);
+    node->setArgs(argsNode);
 
     leave();
     return node;
@@ -849,6 +846,8 @@ ASTNode* Parser::args() {
             ExpListNode* explistNode = explist();
             next(Token::RP);
             leave();
+
+            cout << "got a explist" << endl;
             return explistNode;
         } else {
             next(Token::RP);
@@ -884,9 +883,9 @@ ASTNode* Parser::functiondef() {
 /*
  * funcbody ::= ‘(’ [parlist] ‘)’ block end
  */
-FunctionBodyNode* Parser::funcbody() {
+FuncBodyNode* Parser::funcbody() {
     enter("funcbody");
-    FunctionBodyNode* node = new FunctionBodyNode;
+    FuncBodyNode* node = new FuncBodyNode;
     next(Token::LP);
     ASTNode* parlistNode = parlist();
     next(Token::RP);

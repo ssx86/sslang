@@ -72,10 +72,10 @@ class Parser
         ASTNode* _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
         ASTNode* _prefixexp(ASTNode* prefix) ;
-        ASTNode* functioncall() ;
+        FuncCallNode* functioncall(ASTNode* prefixexpNode, ASTNode* argsNode) ;
         ASTNode* args() ;
         ASTNode* functiondef() ;
-        FunctionBodyNode* funcbody() ;
+        FuncBodyNode* funcbody() ;
         ASTNode* parlist() ;
         ASTNode* tableconstructor() ;
         FieldListNode* fieldlist() ;

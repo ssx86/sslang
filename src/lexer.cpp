@@ -217,7 +217,6 @@ bool Lexer::Init() {
 }
 
 void Lexer::next() {
-    std::cout << "eat " << m_current << std::endl;
 	m_current = m_lookAhead[0];
 	m_lookAhead[0] = m_lookAhead[1];
 	if( !( m_input->get(m_lookAhead[1]) )) {
