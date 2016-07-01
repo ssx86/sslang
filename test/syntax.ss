@@ -6,19 +6,20 @@ end
 a = 13
 b = 'Hello world'
 i_1 = 9.0
+b = 8
 d = a + b
 d = a - b
 d = a * b
 d = a / b
-d = a ^ b
-d = a | b
-d = a || b
-d = a && b
-d = a & b
+-- d = a ^ b
+-- d = a | b
+-- d = a || b
+-- d = a && b
+-- d = a & b
 
 
-arr = {1, 2, 3, "ff"}
-arr[0] = 4
+-- arr = {1, 2, 3, "ff"}
+-- arr[0] = 4
 
 
 function fib(a)

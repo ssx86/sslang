@@ -414,6 +414,7 @@ ASTNode* Parser::stat() {
 
     if(match(Token::COMMENT)) {
         next();
+        cout << "now is " << current()->tostring() << std::endl;
         leave();
         return empty();
     } else if(match(Token::SEMICOLON) ) {

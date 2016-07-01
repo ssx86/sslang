@@ -10,6 +10,7 @@
 const char* KEYWORDS[] = {"function", "end", "if", "else", "while", "then", "continue", "break", "return", "import", "for"};
 
 Lexer::Lexer(std::istream* _input) {
+    m_lineno = 1;
 	m_input = _input;
 	m_lookAhead[0] = 0;
 	m_lookAhead[1] = 0;
@@ -127,7 +128,7 @@ Token* Lexer::GetToken() {
                         if(current() == '\n')
                             m_lineno++;
                     } while ( ']' != m_lookAhead[0] || ']' != m_lookAhead[1]);
-                    next(); next(); next();
+                    next(); next(); 
                 } else {
                     do{ next();} while ( '\n' != current() );
                 }
@@ -216,6 +217,7 @@ bool Lexer::Init() {
 }
 
 void Lexer::next() {
+    std::cout << "eat " << m_current << std::endl;
 	m_current = m_lookAhead[0];
 	m_lookAhead[0] = m_lookAhead[1];
 	if( !( m_input->get(m_lookAhead[1]) )) {

@@ -17,6 +17,12 @@ class Enveronment {
     map<std::string, Value*> names;
     typedef map<std::string, Value*>::iterator iterator;
     Enveronment* next;
+    void set(std::string name, Value* value) {
+        names[name] = value;
+    }
+    Value* get(std::string name) {
+        return names[name];
+    }
 };
 
 class ASTNode{
@@ -47,6 +53,7 @@ class BlockNode : public ASTNode {
                 value = children(i)->eval(env);
                 std::cout << value->tostring() << std::endl;
             }
+            assert(value);
             return value;
         }
 };
@@ -194,12 +201,32 @@ class ForNode : public ASTNode {
             m_block = block;
         }
         virtual Value* eval(Enveronment* env) {
-            m_from->eval(env);
-            m_to->eval(env);
-            if(m_step) {
-                m_step->eval(env);
+            std::cout << "For Node" << std::endl;
+
+            Value* value = NULL;
+            int from = m_from->eval(env)->intValue();
+            int to = m_to->eval(env)->intValue();
+
+            env->set(m_name->name(), new IntValue(from));
+
+            std::cout << "from = " << from << ", to = " << to << std::endl;
+
+            while( env->get(m_name->name())->intValue() <= to ) {
+                std::cout << "loop(" << from << ")" << std::endl;
+                int step = 1;
+                if(m_step) {
+                    step = m_step->eval(env)->intValue();
+                }
+
+                from += step;
+                to = m_to->eval(env)->intValue();
+
+                value = m_block->eval(env);
+
+                env->set(m_name->name(), new IntValue(from));
             }
-            return m_block->eval(env);
+            assert(value);
+            return value;
         }
     private:
         NameNode* m_name;
