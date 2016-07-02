@@ -40,7 +40,6 @@ class BlockNode : public ASTNode {
 
             Value* value;
             for(int i = 0; i < m_children.size(); i++) {
-                cout << "block evaling" << endl;
                 value = children(i)->eval(env);
                 std::cout << value->tostring() << std::endl;
             }
@@ -56,7 +55,6 @@ class NameNode : public ASTNode{
             m_name = token->tostring();
         }
         virtual Value* eval(Enveronment* env) {
-            std::cout << "find name:" << m_name << std::endl;
             Enveronment::iterator it = env->names.find(m_name);
             if (it != env->names.end())
                 return it->second;
@@ -193,7 +191,6 @@ class ForNode : public ASTNode {
             m_block = block;
         }
         virtual Value* eval(Enveronment* env) {
-            std::cout << "For Node" << std::endl;
 
             Value* value = NULL;
             int from = m_from->eval(env)->intValue();
@@ -201,7 +198,6 @@ class ForNode : public ASTNode {
 
             env->set(m_name->name(), new IntValue(from));
 
-            std::cout << "from = " << from << ", to = " << to << std::endl;
 
             while( env->get(m_name->name())->intValue() <= to ) {
                 std::cout << "loop(" << from << ")" << std::endl;
@@ -281,7 +277,6 @@ class FieldListNode : public ASTNode {
 class FuncBodyNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
-            cout << "running body" << children_count() << endl;
             for(int i = 0; i < m_children.size(); i++) {
                 std::cout << children(i)->eval(env)->tostring() << std::endl;
             }
@@ -305,13 +300,11 @@ class FuncCallNode : public ASTNode {
             return m_name;
         }
         virtual Value* eval(Enveronment* env) {
-            std::cout << "FuncCall Node Eval" << std::endl;
+            cout << "find a function call, trying to run it: " << m_name << endl;
             FuncValue* funcValue = dynamic_cast<FuncValue*>(env->get(m_name));
             if (funcValue) {
-                std::cout << "find function" << std::endl;
                 return funcValue->call(env);
             } else {
-                std::cout << "not find function" << std::endl;
                 Value* value = new StringValue("<FuncCallNode>");
                 return value;
             }
@@ -397,7 +390,6 @@ class LabelNode : public ASTNode {
 class RetNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
-            cout << "retnode evaling" << endl;
             Value* value = NULL;
             for(int i = 0; i < m_children.size(); i++) {
                 value = children(i)->eval(env);
@@ -417,9 +409,9 @@ class FunctionNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
             env->set(m_name->name(), new FuncValue(m_body));
-            std::cout << "Add a function called " << m_name->name() << std::endl;
-            FuncValue* temp = dynamic_cast<FuncValue*>(env->get(m_name->name()));
-            std::cout <<  "try run: " << temp->call(env)->tostring() << std::endl;
+            cout << "adding a function named: " << "<" << m_name->name() << ">" << endl;
+              
+              
             return new StringValue("<FunctionNode>");
         }
     private:

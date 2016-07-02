@@ -353,7 +353,6 @@ FunctionNode* Parser::function_stat() {
     //funcname
     node->setName(funcname());
     node->setBody(funcbody());
-    cout << "oh yeah!!!!!!!!!!!!!!!!!!" << endl;
     leave();
     return node;
 }
@@ -416,7 +415,6 @@ ASTNode* Parser::stat() {
 
     if(match(Token::COMMENT)) {
         next();
-        cout << "now is " << current()->tostring() << std::endl;
         leave();
         return empty();
     } else if(match(Token::SEMICOLON) ) {
@@ -612,7 +610,7 @@ ASTNode* Parser::var() {
             node->addChild(name());
         }
     }
-    _var(node);
+    node = _var(node);
 
     leave();
     return node;
@@ -642,7 +640,7 @@ ASTNode* Parser::_var(ASTNode* prefix) {
         return prefix;
     }
 
-    _var(prefix);
+    prefix = _var(prefix);
 
     leave();
     return prefix;
@@ -800,8 +798,8 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
     } else {
         ASTNode* argsNode = args();
         if (argsNode) {
+            cout << "aha! function call!" << endl;
             FuncCallNode* funcCallNode = functioncall(prefix, argsNode);
-            std::cout << "add function call !" << std::endl;
             leave();
             return funcCallNode;
         }
@@ -821,7 +819,6 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
 FuncCallNode* Parser::functioncall(ASTNode* prefixexpNode, ASTNode* argsNode) {
     enter("functioncall");
 
-    std::cout << "got a function call ~~~~~~~~" << std::endl ;
     FuncCallNode* node = new FuncCallNode;
     node->setName(prefixexpNode);
     node->setArgs(argsNode);
@@ -847,7 +844,6 @@ ASTNode* Parser::args() {
             next(Token::RP);
             leave();
 
-            cout << "got a explist" << endl;
             return explistNode;
         } else {
             next(Token::RP);
