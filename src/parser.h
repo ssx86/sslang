@@ -76,7 +76,7 @@ class Parser
         ASTNode* args() ;
         ASTNode* functiondef() ;
         FuncBodyNode* funcbody() ;
-        ASTNode* parlist() ;
+        NameListNode* parlist() ;
         ASTNode* tableconstructor() ;
         FieldListNode* fieldlist() ;
         FieldNode* field() ;

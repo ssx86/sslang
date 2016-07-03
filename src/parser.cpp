@@ -882,15 +882,17 @@ ASTNode* Parser::functiondef() {
 FuncBodyNode* Parser::funcbody() {
     enter("funcbody");
     FuncBodyNode* node = new FuncBodyNode;
-    next(Token::LP);
-    ASTNode* parlistNode = parlist();
-    next(Token::RP);
 
+    next(Token::LP);
+    NameListNode* parlistNode = parlist();
+
+    next(Token::RP);
     BlockNode* blockNode = block();
 
     next(Token::ID); // "end"
-    node->addChild(parlistNode);
-    node->addChild(blockNode);
+
+    node->setParList(parlistNode);
+    node->setBlock(blockNode);
     leave();
     return node ;
 }
@@ -898,12 +900,12 @@ FuncBodyNode* Parser::funcbody() {
 /*
  * parlist ::= namelist [‘,’ ‘...’] | ‘...’
  */
-ASTNode* Parser::parlist() {
+NameListNode* Parser::parlist() {
     enter("parlist");
     NameListNode* namelistNode = NULL;
     if(match(Token::RP)) {
         leave();
-        return NULL;
+        return new NameListNode;
     } else if(match("...")) {
         LeafNode* node =  leaf();
         namelistNode->addChild(node);

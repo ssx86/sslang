@@ -2,6 +2,7 @@
 #define _SS_VALUE_H_
 
 #include <map>
+#include <iostream>
 #include <string>
 
 using namespace std;
@@ -9,15 +10,30 @@ using namespace std;
 class Value;
 class Enveronment {
     public:
-    map<std::string, Value*> names;
-    typedef map<std::string, Value*>::iterator iterator;
-    Enveronment* next;
-    void set(std::string name, Value* value) {
-        names[name] = value;
-    }
-    Value* get(std::string name) {
-        return names[name];
-    }
+        Enveronment() : next(NULL) {}
+
+        map<std::string, Value*> names;
+        typedef map<std::string, Value*>::iterator IterType;
+        Enveronment* next;
+
+        void set(std::string name, Value* value) {
+            names[name] = value;
+        }
+
+        Value* get(std::string name) {
+            cout << "looking for a name: " << name << endl;
+            IterType it = names.find(name);
+            if(it == names.end()) 
+            {
+                if(next == NULL) {
+                    cerr << "undefined name: " << name << endl;
+                    exit(0);
+                } else {
+                    return next->get(name);
+                }
+            }
+            return it->second;
+        }
 };
 
 class IntValue;
@@ -70,6 +86,7 @@ class StringValue : public Value {
         }
 
         std::string tostring() {
+            cout << "string value" << endl;
             return m_value;
         }
         virtual Type type() {
@@ -88,6 +105,7 @@ class DoubleValue : public Value {
             return m_value;
         }
         std::string tostring() {
+            cout << "double value" << endl;
             char temp[100];
             sprintf(temp, "%f", m_value);
             return std::string(temp);
@@ -108,6 +126,7 @@ class BoolValue : public Value {
             return m_value;
         }
         std::string tostring() {
+            cout << "bool value" << endl;
             if(m_value) 
                 return "true";
             else
@@ -129,11 +148,15 @@ class FuncValue : public Value {
         FuncValue(FuncBodyNode* body) {
             m_body = body;
         }
+        FuncBodyNode* getBodyNode() {
+            return m_body;
+        }
         Value* call(Enveronment* env);
-        
+
     public:
         FuncBodyNode* m_body;
         std::string tostring() {
+            cout << "func value" << endl;
             return "function value";
         }
         virtual Type type() {
@@ -153,6 +176,7 @@ class IntValue : public Value {
             return m_value;
         }
         std::string tostring() {
+            cout << "int value" << endl;
             char temp[100];
             sprintf(temp, "%d", m_value);
             return std::string(temp);

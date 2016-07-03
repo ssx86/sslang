@@ -10,6 +10,7 @@ ASTNode* ASTNode::children(int i) {
 
 Value* execute(Token* op, Value* left, Value* right, Value::Type retType)
 {
+    cout << "doing +++" << endl;
     if(op->isType(Token::ADD)) {
         switch (retType)
         {

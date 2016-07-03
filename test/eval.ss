@@ -6,7 +6,13 @@ h = k / 5;
 
 d = i + j
 -- asdf
+function print()
+end
+
 function fib(n)
+  i = n * n
+  print(i)
+  fib(n-1)
   return fib(n-1) + fib(n-2)
 end
 

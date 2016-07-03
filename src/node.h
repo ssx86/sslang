@@ -38,7 +38,7 @@ class BlockNode : public ASTNode {
             if (!env) 
                 env = new Enveronment;
 
-            Value* value;
+            Value* value = NULL;
             for(int i = 0; i < m_children.size(); i++) {
                 value = children(i)->eval(env);
                 std::cout << value->tostring() << std::endl;
@@ -55,11 +55,7 @@ class NameNode : public ASTNode{
             m_name = token->tostring();
         }
         virtual Value* eval(Enveronment* env) {
-            Enveronment::iterator it = env->names.find(m_name);
-            if (it != env->names.end())
-                return it->second;
-            else
-                return new StringValue("<NO Value>");
+            return env->get(m_name);
         }
         std::string name() {
             return m_name;
@@ -274,15 +270,40 @@ class FieldListNode : public ASTNode {
             return value;
         }
 };
-class FuncBodyNode : public ASTNode {
+
+class NameListNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
             for(int i = 0; i < m_children.size(); i++) {
                 std::cout << children(i)->eval(env)->tostring() << std::endl;
             }
-            Value* value = new StringValue("<FuncBodyNode>");
+            Value* value = new StringValue("<NameListNode>");
             return value;
         }
+};
+class FuncBodyNode : public ASTNode {
+    public:
+        FuncBodyNode() : m_block(NULL), m_parlist(NULL) {}
+
+        void setBlock(BlockNode* block) {
+            m_block = block;
+        }
+        BlockNode* getBlock() {
+            return m_block;
+        }
+        void setParList(NameListNode* parlist) {
+            m_parlist = parlist;
+        }
+
+        NameListNode* getParList() {
+            return m_parlist;
+        }
+        virtual Value* eval(Enveronment* env) {
+            return m_block->eval(env);
+        }
+    private:
+        BlockNode* m_block;
+        NameListNode* m_parlist;
 };
 class FuncCallNode : public ASTNode {
     public:
@@ -302,8 +323,24 @@ class FuncCallNode : public ASTNode {
         virtual Value* eval(Enveronment* env) {
             cout << "find a function call, trying to run it: " << m_name << endl;
             FuncValue* funcValue = dynamic_cast<FuncValue*>(env->get(m_name));
+
+            cout << "#############=> " << funcValue->getBodyNode()->getBlock()->children_count() << endl;
+
             if (funcValue) {
-                return funcValue->call(env);
+                NameListNode* parList = funcValue->getBodyNode()->getParList();
+
+                    
+                // 设置参数环境
+                Enveronment *localEnv = new Enveronment;
+                localEnv->next = env;
+
+                for(int i = 0; i < parList->children_count(); i++) {
+                    cout << "par: " << parList->children(i)->name() << endl;
+                    std::string name = parList->children(i)->name();
+                    localEnv->set(name, m_args->children(i)->eval(env));
+                }
+
+                return funcValue->call(localEnv);
             } else {
                 Value* value = new StringValue("<FuncCallNode>");
                 return value;
@@ -322,16 +359,6 @@ class ExpListNode : public ASTNode {
                 std::cout << children(i)->eval(env)->tostring() << std::endl;
             }
             Value* value = new StringValue("<ExpListNode>");
-            return value;
-        }
-};
-class NameListNode : public ASTNode {
-    public:
-        virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            Value* value = new StringValue("<NameListNode>");
             return value;
         }
 };
@@ -410,6 +437,7 @@ class FunctionNode : public ASTNode {
         virtual Value* eval(Enveronment* env) {
             env->set(m_name->name(), new FuncValue(m_body));
             cout << "adding a function named: " << "<" << m_name->name() << ">" << endl;
+            cout << " with block size = " << "<" << m_body->getBlock()->children_count() << ">" << endl;
               
               
             return new StringValue("<FunctionNode>");
