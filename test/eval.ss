@@ -5,15 +5,19 @@ k = k * 3
 h = k / 5;
 
 d = i + j
--- asdf
-function print()
-end
+
 
 function fib(n)
-  i = n * n
-  print(i)
-  fib(n-1)
-  return fib(n-1) + fib(n-2)
+  if n == 1 then
+     return 1
+  elseif n == 2 then
+     return 1 
+  else
+     return fib(n-1) + fib(n-2)
+  end
 end
 
-fib(4)
+for i = 1, 10, 1 do 
+  print(fib(i))
+  print(",\n")
+end

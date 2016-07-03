@@ -10,7 +10,6 @@ ASTNode* ASTNode::children(int i) {
 
 Value* execute(Token* op, Value* left, Value* right, Value::Type retType)
 {
-    cout << "doing +++" << endl;
     if(op->isType(Token::ADD)) {
         switch (retType)
         {
@@ -43,5 +42,7 @@ Value* execute(Token* op, Value* left, Value* right, Value::Type retType)
             case Value::DOUBLE:
                 return new DoubleValue(left->doubleValue() + right->doubleValue());
         }
+    } else if(op->isType(Token::EQ)) {
+        return new BoolValue(left->eq(right));
     }
 }

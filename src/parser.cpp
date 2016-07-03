@@ -73,7 +73,7 @@ void Parser::do_next() {
         m_lookAhead[1] = m_pLexer->GetToken();   
 
         if (!current()) {
-            std::cout << "end of file" << std::endl;
+            //std::cout << "end of file" << std::endl;
             break;
         }
 	} while (m_current->isType(Token::NEWLINE) || m_current->isType(Token::COMMENT) );
@@ -253,10 +253,10 @@ IfNode* Parser::if_stat() {
     ASTNode* expNode = exp();
     next("then"); // then
     BlockNode* blockNode = block();
-    pathNode->addChild(expNode);
-    pathNode->addChild(blockNode);
+    pathNode->setCondition(expNode);
+    pathNode->setValue(blockNode);
 
-    ifNode->addChild(pathNode);
+    ifNode->addCond(pathNode);
 
     while(match("elseif")) {
         next("elseif");
@@ -265,20 +265,21 @@ IfNode* Parser::if_stat() {
         ASTNode* expNode = exp();
         next("then"); // then
         BlockNode* blockNode = block();
-        pathNode->addChild(expNode);
-        pathNode->addChild(blockNode);
+        pathNode->setCondition(expNode);
+        pathNode->setValue(blockNode);
 
-        ifNode->addChild(pathNode);
+        ifNode->addCond(pathNode);
     }
     if(match("else")) {
         next("else");
         CondNode* pathNode = new CondNode;
 
+        pathNode->setCondition(NULL);
         ASTNode* blockNode = block();
 
-        pathNode->addChild(blockNode);
+        pathNode->setValue(blockNode);
 
-        ifNode->addChild(pathNode);
+        ifNode->addCond(pathNode);
     }
 
     next("end"); // "end"
@@ -798,7 +799,6 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
     } else {
         ASTNode* argsNode = args();
         if (argsNode) {
-            cout << "aha! function call!" << endl;
             FuncCallNode* funcCallNode = functioncall(prefix, argsNode);
             leave();
             return funcCallNode;
@@ -902,20 +902,21 @@ FuncBodyNode* Parser::funcbody() {
  */
 NameListNode* Parser::parlist() {
     enter("parlist");
-    NameListNode* namelistNode = NULL;
+
     if(match(Token::RP)) {
         leave();
         return new NameListNode;
     } else if(match("...")) {
-        LeafNode* node =  leaf();
+        NameNode* node = name();
+        NameListNode* namelistNode = new NameListNode;
         namelistNode->addChild(node);
         leave();
         return namelistNode;
     } else {
-        namelistNode = namelist();
+        NameListNode* namelistNode = namelist();
         if(match(Token::COMMA)) {
             next();
-            namelistNode->addChild(leaf());
+            namelistNode->addChild(name());
         }
         leave();
         return namelistNode;

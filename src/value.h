@@ -16,12 +16,9 @@ class Enveronment {
         typedef map<std::string, Value*>::iterator IterType;
         Enveronment* next;
 
-        void set(std::string name, Value* value) {
-            names[name] = value;
-        }
+        void set(std::string name, Value* value) ;
 
         Value* get(std::string name) {
-            cout << "looking for a name: " << name << endl;
             IterType it = names.find(name);
             if(it == names.end()) 
             {
@@ -43,8 +40,6 @@ class BoolValue;
 
 class Value {
     public:
-        virtual std::string tostring() = 0;
-
         typedef enum {
             INT, 
             DOUBLE, 
@@ -53,6 +48,10 @@ class Value {
             FUNC,
             DUMMY
         } Type;
+
+        virtual std::string tostring() = 0;
+        virtual bool eq(Value* other) = 0;
+        virtual Type type() = 0;
 
         virtual std::string stringValue() {
             return "";
@@ -66,11 +65,6 @@ class Value {
         virtual int intValue() {
             return 0;
         }
-
-
-        virtual Type type() = 0;
-
-
 };
 
 class StringValue : public Value {
@@ -86,11 +80,13 @@ class StringValue : public Value {
         }
 
         std::string tostring() {
-            cout << "string value" << endl;
             return m_value;
         }
         virtual Type type() {
             return STRING;
+        }
+        virtual bool eq(Value* other) {
+            return type() == other->type() && m_value == other->stringValue();
         }
     private:
         std::string m_value;
@@ -104,6 +100,9 @@ class DoubleValue : public Value {
         double doubleValue() {
             return m_value;
         }
+        virtual bool boolValue() {
+            return m_value != 0;
+        }
         std::string tostring() {
             cout << "double value" << endl;
             char temp[100];
@@ -112,6 +111,9 @@ class DoubleValue : public Value {
         }
         virtual Type type() {
             return INT;
+        }
+        virtual bool eq(Value* other) {
+            return type() == other->type() && m_value == other->doubleValue();
         }
     private :
         double m_value;
@@ -135,6 +137,9 @@ class BoolValue : public Value {
         virtual Type type() {
             return BOOL;
         }
+        virtual bool eq(Value* other) {
+            return m_value == other->boolValue();
+        }
     private:
         bool m_value;
 };
@@ -156,11 +161,13 @@ class FuncValue : public Value {
     public:
         FuncBodyNode* m_body;
         std::string tostring() {
-            cout << "func value" << endl;
             return "function value";
         }
         virtual Type type() {
             return FUNC;
+        }
+        virtual bool eq(Value* other) {
+            return other == this; // address equal
         }
 };
 
@@ -175,14 +182,19 @@ class IntValue : public Value {
         double doubleValue() {
             return m_value;
         }
+        virtual bool boolValue() {
+            return m_value != 0;
+        }
         std::string tostring() {
-            cout << "int value" << endl;
             char temp[100];
             sprintf(temp, "%d", m_value);
             return std::string(temp);
         }
         virtual Type type() {
             return INT;
+        }
+        virtual bool eq(Value* other) {
+            return type() == other->type() && m_value == other->intValue();
         }
     private :
         int m_value;

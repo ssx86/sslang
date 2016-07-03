@@ -52,8 +52,16 @@ Token* Lexer::GetToken() {
 		char c = current();
 		std::stringstream ss;
 		while( (c = current()) != ending ) {	
-			ss << c;
-			next();
+            if (c == '\\' && 'n' == lookAhead1()) {
+                next();
+                ss << '\n';
+            } else if (c == '\\' && '\\' == lookAhead1()) {
+                next();
+                ss << '\\';
+            } else {
+                ss << c;
+            }
+            next();
 		}
 		next(); // eat the ending quote
 

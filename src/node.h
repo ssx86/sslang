@@ -32,6 +32,16 @@ class ASTNode{
         }
 };
 
+class RetNode : public ASTNode {
+    public:
+        virtual Value* eval(Enveronment* env) {
+            Value* value = NULL;
+            for(int i = 0; i < m_children.size(); i++) {
+                value = children(i)->eval(env);
+            }
+            return value;
+        }
+};
 class BlockNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
@@ -41,7 +51,9 @@ class BlockNode : public ASTNode {
             Value* value = NULL;
             for(int i = 0; i < m_children.size(); i++) {
                 value = children(i)->eval(env);
-                std::cout << value->tostring() << std::endl;
+                if( dynamic_cast<RetNode*>( children(i) ) ) {
+                    break;
+                }
             }
             assert(value);
             return value;
@@ -196,7 +208,6 @@ class ForNode : public ASTNode {
 
 
             while( env->get(m_name->name())->intValue() <= to ) {
-                std::cout << "loop(" << from << ")" << std::endl;
                 int step = 1;
                 if(m_step) {
                     step = m_step->eval(env)->intValue();
@@ -237,7 +248,6 @@ class AssignNode : public ASTNode {
             m_exps.push_back(exp);
         }
         virtual Value* eval(Enveronment* env) {
-
             Value* value = NULL;
             for(int i = 0; i < (int)m_vars.size(); i++) {
                 NameNode* pName = dynamic_cast<NameNode*>(m_vars[i]);
@@ -245,7 +255,6 @@ class AssignNode : public ASTNode {
                     std::string varName = pName->name();
                     value = m_exps[i]->eval(env);
                     env->names[varName] = value;
-                    std::cout << "Assign: " << varName << " := " << value->tostring() << std::endl;
                 } else {
                     std::cout << "error reading var name" << std::endl;
                 }
@@ -321,29 +330,30 @@ class FuncCallNode : public ASTNode {
             return m_name;
         }
         virtual Value* eval(Enveronment* env) {
-            cout << "find a function call, trying to run it: " << m_name << endl;
-            FuncValue* funcValue = dynamic_cast<FuncValue*>(env->get(m_name));
-
-            cout << "#############=> " << funcValue->getBodyNode()->getBlock()->children_count() << endl;
-
-            if (funcValue) {
-                NameListNode* parList = funcValue->getBodyNode()->getParList();
-
-                    
-                // 设置参数环境
-                Enveronment *localEnv = new Enveronment;
-                localEnv->next = env;
-
-                for(int i = 0; i < parList->children_count(); i++) {
-                    cout << "par: " << parList->children(i)->name() << endl;
-                    std::string name = parList->children(i)->name();
-                    localEnv->set(name, m_args->children(i)->eval(env));
-                }
-
-                return funcValue->call(localEnv);
-            } else {
-                Value* value = new StringValue("<FuncCallNode>");
+            if ( m_name == "print" ) {
+                Value* value = m_args->children(0)->eval(env);
+                cout << value->tostring();
                 return value;
+            } else {
+                //cout << "find a function call, trying to run it: " << m_name << endl;
+                FuncValue* funcValue = dynamic_cast<FuncValue*>(env->get(m_name));
+
+                if (funcValue) {
+                    NameListNode* parList = funcValue->getBodyNode()->getParList();
+
+                    // 设置参数环境
+                    Enveronment *localEnv = new Enveronment;
+                    localEnv->next = env;
+
+                    for(int i = 0; i < parList->children_count(); i++) {
+                        std::string name = parList->children(i)->name();
+                        localEnv->set(name, m_args->children(i)->eval(env));
+                    }
+
+                    return funcValue->call(localEnv);
+                } else {
+                    cout << "error" << endl;
+                }
             }
         }
     private:
@@ -355,10 +365,11 @@ class FuncCallNode : public ASTNode {
 class ExpListNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
+            Value* value = NULL;
             for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
+                value = children(i)->eval(env);
             }
-            Value* value = new StringValue("<ExpListNode>");
+            assert(value);
             return value;
         }
 };
@@ -414,16 +425,6 @@ class LabelNode : public ASTNode {
             return value;
         }
 };
-class RetNode : public ASTNode {
-    public:
-        virtual Value* eval(Enveronment* env) {
-            Value* value = NULL;
-            for(int i = 0; i < m_children.size(); i++) {
-                value = children(i)->eval(env);
-            }
-            return value;
-        }
-};
 class FunctionNode : public ASTNode {
     public:
         void setName(FuncNameNode* name) {
@@ -436,8 +437,8 @@ class FunctionNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
             env->set(m_name->name(), new FuncValue(m_body));
-            cout << "adding a function named: " << "<" << m_name->name() << ">" << endl;
-            cout << " with block size = " << "<" << m_body->getBlock()->children_count() << ">" << endl;
+            //cout << "adding a function named: " << "<" << m_name->name() << ">" << endl;
+            //cout << " with block size = " << "<" << m_body->getBlock()->children_count() << ">" << endl;
               
               
             return new StringValue("<FunctionNode>");
@@ -446,23 +447,40 @@ class FunctionNode : public ASTNode {
         FuncNameNode* m_name;
         FuncBodyNode* m_body;
 };
+
+class CondNode {
+    public:
+        void setCondition(ASTNode* cond) {
+            m_condition = cond;
+        }
+        void setValue(ASTNode* value) {
+            m_value = value;
+        }
+        bool getBool(Enveronment* env) {
+            if(!m_condition)
+                return true;
+
+            return m_condition->eval(env)->boolValue();
+        }
+        Value* getValue(Enveronment* env) {
+            return m_value->eval(env);
+        }
+    private:
+        ASTNode* m_condition;
+        ASTNode*  m_value;
+};
 class IfNode : public ASTNode {
     public:
+        vector<CondNode*> m_conds;
+        void addCond(CondNode* cond) {
+            m_conds.push_back(cond);
+        }
         virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
+            for(int i = 0; i < m_conds.size(); i++) {
+                if( m_conds[i]->getBool(env) )
+                    return m_conds[i]->getValue(env);
             }
             Value* value = new StringValue("<IfNode>");
-            return value;
-        }
-};
-class CondNode : public ASTNode {
-    public:
-        virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            Value* value = new StringValue("<CondNode>");
             return value;
         }
 };
