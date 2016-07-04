@@ -745,7 +745,10 @@ ASTNode* Parser::exp() {
  */
 ASTNode* Parser::_exp(ASTNode* prefix) {
     enter("_exp");
-	assert(!current()->isType(Token::COMMENT));
+
+    if(current() == NULL)
+        return prefix;
+
     Token* opToken = binop();
 
     if (opToken) {
@@ -787,6 +790,10 @@ ASTNode* Parser::prefixexp() {
  */
 ASTNode* Parser::_prefixexp(ASTNode* prefix) {
     enter("_prefixexp");
+
+    if(current() == NULL)
+        return prefix;
+
     if ( match (Token::COLON) ) {
         next();
         prefix->addChild(name());

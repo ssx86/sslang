@@ -67,6 +67,14 @@ class Token
         bool isType(Type t) {
             return m_type == t;
         }
+        bool isKey(std::string key) {
+            if (( type() == ID) && key == svalue) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
 
 //    private:
     public:

@@ -19,5 +19,7 @@ end
 
 for i = 1, 10, 1 do 
   print(fib(i))
-  print(",\n")
+  print(", ")
 end
+
+print("\n");

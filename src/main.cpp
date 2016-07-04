@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 
     if (root)
     {
+        std::cout << "start to eval" << std::endl;
         Value* value = root->eval(NULL);
     }
     else

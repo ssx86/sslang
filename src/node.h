@@ -9,8 +9,6 @@
 
 using namespace std;
 
-Value* execute(Token* op, Value* left, Value* right, Value::Type retType);
-
 
 class ASTNode{
     public:
@@ -50,6 +48,7 @@ class BlockNode : public ASTNode {
 
             Value* value = NULL;
             for(int i = 0; i < m_children.size(); i++) {
+                
                 value = children(i)->eval(env);
                 if( dynamic_cast<RetNode*>( children(i) ) ) {
                     break;
@@ -153,22 +152,36 @@ class BinopNode : public ASTNode {
         }
 
         virtual Value* eval(Enveronment* env) {
-            Value* leftValue = m_left->eval(env);
-            Value* rightValue = m_right->eval(env);
+            Value* left = m_left->eval(env);
+            Value* right = m_right->eval(env);
 
-            if(Value::INT == leftValue->type() && Value::INT == rightValue->type() ) {
-                return execute(m_op, leftValue, rightValue, Value::INT);
-            } else if (Value::DOUBLE == leftValue->type() && 
-                    (Value::INT == rightValue->type() || Value::DOUBLE == rightValue->type())) {
-                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
-            } else if (Value::DOUBLE == rightValue->type() && 
-                    (Value::INT == leftValue->type() || Value::DOUBLE == leftValue->type())) {
-                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
-            } else if (Value::DOUBLE == leftValue->type() && Value::DOUBLE == rightValue->type()) {
-                return execute(m_op, leftValue, rightValue, Value::DOUBLE);
-            } else if (Value::STRING == leftValue->type() && Value::STRING == rightValue->type()) {
-                return execute(m_op, leftValue, rightValue, Value::STRING);
-            } else return new IntValue(100);
+            if(m_op->isType(Token::ADD)) {
+                return BinOpEval::AddOp(left, right);
+            } else if(m_op->isType(Token::SUB)) {
+                return BinOpEval::SubOp(left, right);
+            } else if(m_op->isType(Token::MUL)) {
+                return BinOpEval::MulOp(left, right);
+            } else if(m_op->isType(Token::DIV)) {
+                return BinOpEval::DivOp(left, right);
+            } else if(m_op->isType(Token::EQ)) {
+                return BinOpEval::EqOp(left, right);
+            } else if(m_op->isType(Token::GT)) {
+                return BinOpEval::GTOp(left, right);
+            } else if(m_op->isType(Token::GE)) {
+                return BinOpEval::GEOp(left, right);
+            } else if(m_op->isType(Token::LT)) {
+                return BinOpEval::LTOp(left, right);
+            } else if(m_op->isType(Token::LE)) {
+                return BinOpEval::LEOp(left, right);
+            } else if(m_op->isType(Token::NE)) {
+                return BinOpEval::NEOp(left, right);
+            } else if(m_op->isKey("and")) {
+                return BinOpEval::AndOp(left, right);
+            } else if(m_op->isKey("or")) {
+                return BinOpEval::OrOp(left, right);
+            } else {
+                return new IntValue(0);
+            }
         }
     private:
         Token* m_op;
@@ -200,6 +213,10 @@ class ForNode : public ASTNode {
         }
         virtual Value* eval(Enveronment* env) {
 
+            // 设置参数环境
+            Enveronment *localEnv = new Enveronment;
+            localEnv->next = env;
+
             Value* value = NULL;
             int from = m_from->eval(env)->intValue();
             int to = m_to->eval(env)->intValue();
@@ -216,7 +233,7 @@ class ForNode : public ASTNode {
                 from += step;
                 to = m_to->eval(env)->intValue();
 
-                value = m_block->eval(env);
+                value = m_block->eval(localEnv);
 
                 env->set(m_name->name(), new IntValue(from));
             }
@@ -353,6 +370,9 @@ class FuncCallNode : public ASTNode {
                     return funcValue->call(localEnv);
                 } else {
                     cout << "error" << endl;
+                    exit(1);
+                    return NULL;
+                    
                 }
             }
         }

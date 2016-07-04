@@ -200,4 +200,150 @@ class IntValue : public Value {
         int m_value;
 };
 
+class BinOpEval {
+    public:
+
+    // add
+    static Value* AddOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new IntValue(left->intValue() + right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new DoubleValue(left->doubleValue() + right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->intValue() + right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->doubleValue() + right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+
+    }
+
+    // sub
+    static Value* SubOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new IntValue(left->intValue() - right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new DoubleValue(left->doubleValue() - right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->intValue() - right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->doubleValue() - right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // mul
+    static Value* MulOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new IntValue(left->intValue() * right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new DoubleValue(left->doubleValue() * right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->intValue() * right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->doubleValue() * right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+   
+    // div
+    static Value* DivOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new IntValue(left->intValue() / right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new DoubleValue(left->doubleValue() / right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->intValue() / right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new DoubleValue(left->doubleValue() / right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // and
+    static Value* AndOp(Value* left, Value* right) {
+        return new BoolValue(left->boolValue() && right->boolValue());
+    }
+
+    // or
+    static Value* OrOp(Value* left, Value* right) {
+        return new BoolValue(left->boolValue() || right->boolValue());
+    }
+
+    // eq
+    static Value* EqOp(Value* left, Value* right) {
+        return new BoolValue(left->eq(right));
+    }
+
+    // gt
+    static Value* GTOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->intValue() > right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->doubleValue() > right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->intValue() > right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->doubleValue() > right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // ge
+    static Value* GEOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->intValue() >= right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->doubleValue() >= right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->intValue() >= right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->doubleValue() >= right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // lt
+    static Value* LTOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->intValue() < right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->doubleValue() < right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->intValue() < right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->doubleValue() < right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // le
+    static Value* LEOp(Value* left, Value* right) {
+        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->intValue() <= right->intValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
+            return new BoolValue(left->doubleValue() <= right->intValue());
+        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->intValue() <= right->doubleValue());
+        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
+            return new BoolValue(left->doubleValue() <= right->doubleValue());
+        } else {
+            return new StringValue("Error Bin op");
+        }
+    }
+
+    // ne
+    static Value* NEOp(Value* left, Value* right) {
+        return new BoolValue(! left->eq(right));
+    }
+
+};
+
 #endif

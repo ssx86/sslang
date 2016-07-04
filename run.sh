@@ -3,8 +3,8 @@ make &&
 echo "\ntesting : eval\n"
 ./sslang ./test/eval.ss true
 
-#echo "\ntesting : syntax\n"
-#./sslang ./test/syntax.ss true
+echo "\ntesting : syntax\n"
+./sslang ./test/syntax.ss true
 
 #echo "\ntesting : lua\n"
 #./sslang ./test/lua.ss true

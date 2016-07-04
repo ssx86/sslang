@@ -55,6 +55,9 @@ Token* Lexer::GetToken() {
             if (c == '\\' && 'n' == lookAhead1()) {
                 next();
                 ss << '\n';
+            } else if (c == '\\' && 't' == lookAhead1()) {
+                next();
+                ss << '\t';
             } else if (c == '\\' && '\\' == lookAhead1()) {
                 next();
                 ss << '\\';
