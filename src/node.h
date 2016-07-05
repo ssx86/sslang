@@ -577,4 +577,17 @@ class BinOpHolderNode : public ASTNode {
         Token* m_op;
 };
 
+class FunctionDefNode : public ASTNode {
+    public:
+        void setBody(FuncBodyNode* body) {
+            m_body = body;
+        }
+    public:
+        virtual Value* eval(Enveronment* env) {
+            return new FuncValue(m_body);
+        }
+    private:
+        FuncBodyNode* m_body;
+};
+
 #endif

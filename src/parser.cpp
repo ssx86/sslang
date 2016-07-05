@@ -918,12 +918,14 @@ ASTNode* Parser::args() {
  */
 ASTNode* Parser::functiondef() {
     enter("functiondef");
-    next(); 
+    next("function"); 
 
-    ASTNode* funcbodyNode = funcbody();
+    FunctionDefNode* node = new FunctionDefNode;
+    FuncBodyNode* funcbodyNode = funcbody();
 
+    node->setBody(funcbodyNode);
     leave();
-    return funcbodyNode;
+    return node;
 }
 
 /*
