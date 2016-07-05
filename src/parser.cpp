@@ -723,11 +723,11 @@ ASTNode* Parser::singleExp() {
         } 
         // unop
         else {
-            UnopNode* testNode = unop();
+            UnopExpNode* testNode = unop();
             if(testNode) { // is unop
                 expNode = testNode ;
-                ASTNode* expNode2 = exp();
-                expNode->addChild( expNode2 );
+                ASTNode* expNode2 = singleExp();
+                testNode->setExp( expNode2 );
 
             } else {
                 ASTNode* prefixExpNode = prefixexp();
@@ -739,6 +739,7 @@ ASTNode* Parser::singleExp() {
     leave();
     return expNode;
 }
+
 ASTNode* Parser::exp() {
     std::vector<ASTNode*> nodes;
     ASTNode* exp1 = singleExp();
@@ -1098,7 +1099,7 @@ Token* Parser::binop() {
 /*
  * unop ::= ‘-’ | not | ‘#’ | ‘~’
  */
-UnopNode* Parser::unop() {
+UnopExpNode* Parser::unop() {
     enter("unop");
     if(match(Token::SUB) ||
             match(Token::SHARP) ||
@@ -1106,7 +1107,7 @@ UnopNode* Parser::unop() {
             match("not")
       )
     {
-        UnopNode* unopNode = new UnopNode(current());
+        UnopExpNode* unopNode = new UnopExpNode(current());
         next();
         leave();
         return unopNode;

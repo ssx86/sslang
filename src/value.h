@@ -128,7 +128,6 @@ class BoolValue : public Value {
             return m_value;
         }
         std::string tostring() {
-            cout << "bool value" << endl;
             if(m_value) 
                 return "true";
             else

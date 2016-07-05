@@ -75,21 +75,6 @@ class NameNode : public ASTNode{
     std::string m_name;
 };
 
-class UnopNode : public ASTNode {
-    public:
-        UnopNode(Token* token) {
-            m_op = token;
-        }
-        virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            return new StringValue(m_op->tostring());
-        }
-
-    private:
-        Token* m_op;
-};
 
 class LeafNode : public ASTNode {
     public:
@@ -578,16 +563,50 @@ class BinOpHolderNode : public ASTNode {
 };
 
 class FunctionDefNode : public ASTNode {
-    public:
-        void setBody(FuncBodyNode* body) {
-            m_body = body;
-        }
-    public:
-        virtual Value* eval(Enveronment* env) {
-            return new FuncValue(m_body);
-        }
-    private:
-        FuncBodyNode* m_body;
+  public:
+    void setBody(FuncBodyNode* body) {
+      m_body = body;
+    }
+  public:
+    virtual Value* eval(Enveronment* env) {
+      return new FuncValue(m_body);
+    }
+  private:
+    FuncBodyNode* m_body;
+};
+
+class UnopExpNode : public ASTNode {
+  public:
+    UnopExpNode(Token* op) {
+      m_op = op;
+    }
+    void setExp(ASTNode* exp) {
+      m_exp = exp;
+    }
+  private:
+    ASTNode* m_exp;
+    Token* m_op;
+
+  public:
+    virtual Value* eval(Enveronment* env) {
+      switch(m_op->type()) {
+        case Token::SUB:
+          return BinExpEval::MulOp(new IntValue(-1), m_exp->eval(env));
+        case Token::ID:
+          if(m_op->isKey("not")) {
+            return new BoolValue( ! m_exp->eval(env)->boolValue() );
+          } else {
+            cout << "error unop" << endl;
+            exit(1);
+          }
+        case Token::SHARP:
+          return m_exp->eval(env);
+        case Token::NOT:
+            return new BoolValue( ! m_exp->eval(env)->boolValue() );
+        default:
+            exit(1);
+      }
+    }
 };
 
 #endif

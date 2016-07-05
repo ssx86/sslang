@@ -84,7 +84,7 @@ class Parser
         bool fieldsep() ;
         bool isBinop() ;
         Token* binop() ;
-        UnopNode* unop() ;
+        UnopExpNode* unop() ;
         NameNode* name();
         LeafNode* leaf();
         EmptyNode* empty();
