@@ -139,9 +139,9 @@ class FieldNode : public ASTNode {
 };
 
 
-class BinopNode : public ASTNode {
+class BinExpNode : public ASTNode {
     public:
-        BinopNode(Token* token) : m_left(NULL), m_right(NULL) {
+        BinExpNode(Token* token) : m_left(NULL), m_right(NULL) {
             m_op = token;
         }
         void setLeft(ASTNode* left) {
@@ -150,35 +150,46 @@ class BinopNode : public ASTNode {
         void setRight(ASTNode* right) {
             m_right = right;
         }
+        Token* getOp() {
+            return m_op;
+        }
+        ASTNode* getLeft() {
+            return m_left;
+        }
+        ASTNode* getRight() {
+            return m_right;
+        }
 
         virtual Value* eval(Enveronment* env) {
             Value* left = m_left->eval(env);
             Value* right = m_right->eval(env);
 
             if(m_op->isType(Token::ADD)) {
-                return BinOpEval::AddOp(left, right);
+                return BinExpEval::AddOp(left, right);
             } else if(m_op->isType(Token::SUB)) {
-                return BinOpEval::SubOp(left, right);
+                return BinExpEval::SubOp(left, right);
             } else if(m_op->isType(Token::MUL)) {
-                return BinOpEval::MulOp(left, right);
+                return BinExpEval::MulOp(left, right);
             } else if(m_op->isType(Token::DIV)) {
-                return BinOpEval::DivOp(left, right);
+                return BinExpEval::DivOp(left, right);
             } else if(m_op->isType(Token::EQ)) {
-                return BinOpEval::EqOp(left, right);
+                return BinExpEval::EqOp(left, right);
             } else if(m_op->isType(Token::GT)) {
-                return BinOpEval::GTOp(left, right);
+                return BinExpEval::GTOp(left, right);
             } else if(m_op->isType(Token::GE)) {
-                return BinOpEval::GEOp(left, right);
+                return BinExpEval::GEOp(left, right);
             } else if(m_op->isType(Token::LT)) {
-                return BinOpEval::LTOp(left, right);
+                return BinExpEval::LTOp(left, right);
             } else if(m_op->isType(Token::LE)) {
-                return BinOpEval::LEOp(left, right);
+                return BinExpEval::LEOp(left, right);
             } else if(m_op->isType(Token::NE)) {
-                return BinOpEval::NEOp(left, right);
+                return BinExpEval::NEOp(left, right);
+            } else if(m_op->isType(Token::DOTDOT)) {
+                return BinExpEval::ConcatOp(left, right);
             } else if(m_op->isKey("and")) {
-                return BinOpEval::AndOp(left, right);
+                return BinExpEval::AndOp(left, right);
             } else if(m_op->isKey("or")) {
-                return BinOpEval::OrOp(left, right);
+                return BinExpEval::OrOp(left, right);
             } else {
                 return new IntValue(0);
             }
@@ -349,7 +360,7 @@ class FuncCallNode : public ASTNode {
         virtual Value* eval(Enveronment* env) {
             if ( m_name == "print" ) {
                 Value* value = m_args->children(0)->eval(env);
-                cout << value->tostring();
+                cout << value->tostring() << endl;
                 return value;
             } else {
                 //cout << "find a function call, trying to run it: " << m_name << endl;
@@ -548,5 +559,22 @@ class GotoNode : public ASTNode {
         }
 };
 
+class BinOpHolderNode : public ASTNode {
+    public:
+        BinOpHolderNode(Token* op) {
+            m_op = op;
+        }
+        Token* token() {
+            return m_op;
+        }
+        int priority() {
+            return m_op->pri();
+        }
+        virtual Value* eval(Enveronment* env) {
+            return NULL; // never eval
+        }
+    private:
+        Token* m_op;
+};
 
 #endif

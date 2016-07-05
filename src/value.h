@@ -200,7 +200,7 @@ class IntValue : public Value {
         int m_value;
 };
 
-class BinOpEval {
+class BinExpEval {
     public:
 
     // add
@@ -342,6 +342,10 @@ class BinOpEval {
     // ne
     static Value* NEOp(Value* left, Value* right) {
         return new BoolValue(! left->eq(right));
+    }
+
+    static Value* ConcatOp(Value* left, Value* right) {
+        return new StringValue(left->tostring() + right->tostring());
     }
 
 };

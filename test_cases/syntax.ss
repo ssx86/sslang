@@ -1,3 +1,7 @@
+print(1 + 2 * 3 * 4 - 5 * 6 + 7 - 8 * 9)
+
+print(1 + 2 * 3 + 4)
+
 for i = 1, 5, 1 do 
     i = 3 + i
     i = i - 7
@@ -33,9 +37,9 @@ end
 
 print("===================\n")
 
-for i = 1, 20 do 
-	print(i)
-    print(":\t")
-	print(fib(i))
-    print("\n")
+for i = 1, 15 do 
+	print(i .. ":\t" .. fib(i) )
 end
+
+
+

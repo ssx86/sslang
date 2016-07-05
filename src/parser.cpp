@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
+#include <stack>
 
 #define DEBUG_ENTER 0
 
@@ -76,7 +77,7 @@ void Parser::do_next() {
             //std::cout << "end of file" << std::endl;
             break;
         }
-	} while (m_current->isType(Token::NEWLINE) || m_current->isType(Token::COMMENT) );
+    } while (m_current->isType(Token::NEWLINE) || m_current->isType(Token::COMMENT) );
 
     if(current()) {
 #if DEBUG_ENTER
@@ -698,10 +699,10 @@ ExpListNode* Parser::explist() {
  *         LiteralString  | '...'  | functiondef   |
  *         prefixexp  | tableconstructor  | unop exp )  `exp
  */
-ASTNode* Parser::exp() {
+ASTNode* Parser::singleExp() {
     enter("exp");
 
-	if(match("end") || match(Token::COMMENT)) {
+    if(match("end") || match(Token::COMMENT)) {
         return NULL; // 特殊处理
     }
 
@@ -734,10 +735,69 @@ ASTNode* Parser::exp() {
             }
         }
     }
-    ASTNode* node = _exp(expNode);
 
     leave();
-    return node;
+    return expNode;
+}
+ASTNode* Parser::exp() {
+    std::vector<ASTNode*> nodes;
+    ASTNode* exp1 = singleExp();
+    nodes.push_back(exp1);
+
+    while(isBinop()) {
+        BinOpHolderNode* op = new BinOpHolderNode(binop());
+        ASTNode* exp2 = singleExp();
+        nodes.push_back(op);
+        nodes.push_back(exp2);
+    }
+
+
+    // 中缀转后缀
+    std::stack<BinOpHolderNode*> opstack;
+    std::vector<ASTNode*> output_nodes;
+    for(int i = 0; i < nodes.size(); i++) {
+        if(BinOpHolderNode* op = dynamic_cast<BinOpHolderNode*>(nodes[i])) {
+            if (opstack.empty() ) {
+                    opstack.push(op);
+            } else if( opstack.top()->priority() <= op->priority() ) {
+                    opstack.push(op);
+            } else {
+                while( !opstack.empty() && opstack.top()->priority() >= op->priority() ) {
+                    BinOpHolderNode* temp = opstack.top();
+                    output_nodes.push_back(temp);
+                    opstack.pop();
+                }
+                opstack.push(op);
+            }
+        } else {
+            output_nodes.push_back(nodes[i]);
+        }
+    }
+    while(!opstack.empty()) {
+        ASTNode* temp = opstack.top();
+        output_nodes.push_back(temp);
+        opstack.pop();
+    }
+    std::stack<ASTNode*> tempstack;
+
+    for(int i = 0; i < output_nodes.size(); i++ ) {
+        if(BinOpHolderNode* op = dynamic_cast<BinOpHolderNode*>(output_nodes[i])) {
+            ASTNode* right = tempstack.top(); tempstack.pop();
+            ASTNode* left = tempstack.top(); tempstack.pop();
+            BinExpNode* expNode = new BinExpNode(op->token());
+            expNode->setLeft(left);
+            expNode->setRight(right);
+            tempstack.push(expNode);
+        } else {
+            tempstack.push(output_nodes[i]);
+        }
+    }
+    assert(tempstack.size() == 1);
+    ASTNode* finalNode = tempstack.top();
+    tempstack.pop();
+    return finalNode;
+    
+
 }
 
 /* 
@@ -746,23 +806,6 @@ ASTNode* Parser::exp() {
 ASTNode* Parser::_exp(ASTNode* prefix) {
     enter("_exp");
 
-    if(current() == NULL)
-        return prefix;
-
-    Token* opToken = binop();
-
-    if (opToken) {
-        BinopNode* binopNode = new BinopNode(opToken);
-        binopNode->setLeft(prefix);
-
-        ASTNode* expNode = exp();
-        binopNode->setRight(expNode);
-        leave();
-        return binopNode;
-    } else {
-        leave();
-        return prefix;
-    }
 }
 
 /*
@@ -1005,21 +1048,14 @@ bool Parser::fieldsep() {
     return false;
 }
 
-/*
- * binop ::=  ‘+’ | ‘-’ | ‘*’ | ‘/’ | ‘//’ | ‘^’ | ‘%’ | 
- * ‘&’ | ‘~’ | ‘|’ | ‘>>’ | ‘<<’ | ‘..’ | 
- * ‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ | 
- * and | or
- */
-Token* Parser::binop() {
-    enter("binop");
-    if(match(Token::ADD) ||
+bool Parser::isBinop() {
+    if( match(Token::ADD) || 
             match(Token::SUB) ||
             match(Token::MUL) ||
             match(Token::DIV) ||
-            match(Token::COMMENT) ||
+            //           match(Token:://) ||
             match(Token::XOR) ||
-            match(Token::PERCENT) ||
+            match(Token::MOD) ||
             match(Token::BIT_AND) ||
             match(Token::BIT_OR) ||
             match(Token::AND) ||
@@ -1037,15 +1073,24 @@ Token* Parser::binop() {
             match("or") ||
             match("and")
             ) 
-            {
-                Token* opToken = current();
-                next();
-                leave();
-                return opToken;
-            } else {
-                leave();
-                return NULL;
-            }
+            return true;
+    else
+        return false;
+}
+
+
+/*
+ * binop ::=  ‘+’ | ‘-’ | ‘*’ | ‘/’ | ‘//’ | ‘^’ | ‘%’ | 
+ * ‘&’ | ‘~’ | ‘|’ | ‘>>’ | ‘<<’ | ‘..’ | 
+ * ‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ | 
+ * and | or
+ */
+Token* Parser::binop() {
+    enter("binop");
+    Token* opToken = current();
+    next();
+    leave();
+    return opToken;
 }
 
 /*
@@ -1096,7 +1141,7 @@ LeafNode* Parser::leaf() {
     }
     next();
     return leafNode;
-     
+
 }
 
 EmptyNode* Parser::empty() {

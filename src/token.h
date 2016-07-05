@@ -33,7 +33,7 @@ class Token
             AND,       // &&
             OR,        // ||
             NOT,       // ~
-            PERCENT,   // %
+            MOD,       // %
             BACKSLASH, // 
             LP,        // (
             RP,        // )
@@ -74,6 +74,46 @@ class Token
                 return false;
             }
         }
+        int pri () { // priority
+            switch (m_type) {
+                case LT:
+                case LE:
+                case GT:
+                case GE:
+                case NE:
+                case EQ:
+                    return 7;
+                case BIT_OR:
+                    return 8;
+                case NOT:
+                    return 9;
+                case BIT_AND:
+                    return 10 ;
+                //case MOVEL:
+                //case MOVER:
+                  //return 11;
+                    case DOTDOT:
+                        return 12;
+                case ADD:
+                case SUB:
+                   return 13;
+                case MUL:
+                case DIV:
+                case MOD:
+                   // case "//"
+                   return 14;
+                case ID:
+                   if (svalue == "or")
+                       return 5;
+                   else if (svalue == "and")
+                       return 6;
+                   else if (svalue == "not")
+                       return 15;
+                default:
+                   return 0;
+            }
+        }
+
 
 
 //    private:

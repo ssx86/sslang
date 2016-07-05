@@ -69,6 +69,7 @@ class Parser
         NameListNode* namelist() ;
         ExpListNode* explist() ;
         ASTNode* exp() ;
+        ASTNode* singleExp() ;
         ASTNode* _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
         ASTNode* _prefixexp(ASTNode* prefix) ;
@@ -81,6 +82,7 @@ class Parser
         FieldListNode* fieldlist() ;
         FieldNode* field() ;
         bool fieldsep() ;
+        bool isBinop() ;
         Token* binop() ;
         UnopNode* unop() ;
         NameNode* name();

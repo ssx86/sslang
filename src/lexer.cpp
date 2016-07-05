@@ -220,7 +220,6 @@ bool Lexer::Init() {
 	if (!(m_input->get(m_current) 
 		&& m_input->get(m_lookAhead[0])
 		&& m_input->get(m_lookAhead[1]))) {
-			std::cerr << "input too short" << std::endl;
 			return false;
 	}else{
 		return true;
