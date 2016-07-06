@@ -646,5 +646,32 @@ class TableNode : public ASTNode {
         FieldListNode* m_fieldlist;
 };
        
+class TableAccessNode : public ASTNode {
+    public:
+        void setTable(ASTNode* table) {
+            m_table = table;
+        }
+        void setIndex(ASTNode* index) {
+            m_index = index;
+        }
+    public:
+        virtual Value* eval(Enveronment* env) {
+            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
+                std::string name = nameNode->name();
+
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+
+                return table->getMapValue(name);
+            } else {  // array
+                int index = m_index->eval(env)->intValue();
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+                return table->getArrayValue(index);
+            }
+        }
+
+    private:
+        ASTNode* m_table;
+        ASTNode* m_index;
+};
 
 #endif

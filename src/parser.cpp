@@ -596,20 +596,35 @@ ASTNode* Parser::var() {
         next(Token::LP);
         ASTNode* expNode = exp();
         node->addChild(expNode);
+        next(Token::RP);
 
         node = _prefixexp(node);
 
         if(match(Token::LBRACKET)) {
             next(Token::LBRACKET);
+
+            TableAccessNode* tableAccessNode = new TableAccessNode;
+            tableAccessNode->setTable(node);
             ASTNode* expNode2 = exp();
-            node->addChild(expNode2);
+            tableAccessNode->setIndex(expNode2);
             next(Token::RBRACKET);
+
+            //change node pointer;
+            node = tableAccessNode;
+
+            cout << "accessing table" << endl;
 
         }
         else if (match(Token::DOT)) {
             next(Token::DOT);
             //next is Name
-            node->addChild(name());
+            TableAccessNode* tableAccessNode = new TableAccessNode;
+            tableAccessNode->setTable(node);
+            ASTNode* nameNode = name();
+            tableAccessNode->setIndex(nameNode);
+             
+            //change node pointer;
+            node = tableAccessNode;
         }
     }
     node = _var(node);
@@ -628,13 +643,28 @@ ASTNode* Parser::_var(ASTNode* prefix) {
     //lookforward : [ .
     if (match(Token::LBRACKET)) {
         next(Token::LBRACKET);
+
+        TableAccessNode* tableAccessNode = new TableAccessNode;
+        tableAccessNode->setTable(prefix);
+
         ASTNode* expNode = exp();
-        prefix->addChild(expNode);
+        tableAccessNode->setIndex(expNode);
+
+        //change prefix pointer
+        prefix = tableAccessNode;
+
         next(Token::RBRACKET);
     }
     else if(match(Token::DOT)) {
         next();
-        prefix->addChild(name());
+
+        TableAccessNode* tableAccessNode = new TableAccessNode;
+        tableAccessNode->setTable(prefix);
+
+        tableAccessNode->setIndex(name());
+
+        //change prefix pointer
+        prefix = tableAccessNode;
     }
     else
     {

@@ -145,6 +145,13 @@ class TableValue : public Value {
             return 0;
         }
 
+        Value* getArrayValue(int index) {
+            return m_array[index];
+        }
+        Value* getMapValue(std::string name) {
+            return m_map[name];
+        }
+
         void setArrayValue(int pos, Value* value) {
             if(pos >= m_array.size() )
                 m_array.resize(pos+1);
