@@ -217,7 +217,7 @@ class ForNode : public ASTNode {
             int from = m_from->eval(env)->intValue();
             int to = m_to->eval(env)->intValue();
 
-            env->set(m_name->name(), new IntValue(from));
+            env->add(m_name->name(), new IntValue(from));
 
 
             while( env->get(m_name->name())->intValue() <= to ) {
@@ -231,7 +231,7 @@ class ForNode : public ASTNode {
 
                 value = m_block->eval(localEnv);
 
-                env->set(m_name->name(), new IntValue(from));
+                env->update(m_name->name(), new IntValue(from));
             }
             assert(value);
             return value;
@@ -267,7 +267,9 @@ class AssignNode : public ASTNode {
                 if(pName) {
                     std::string varName = pName->name();
                     value = m_exps[i]->eval(env);
-                    env->names[varName] = value;
+                    if (! env->update(varName, value)) {  //先检索祖先环境链。这是和local赋值的唯一区别
+                        env->add(varName, value);
+                    }
                 } else {
                     std::cout << "error reading var name" << std::endl;
                 }
@@ -360,7 +362,7 @@ class FuncCallNode : public ASTNode {
 
                     for(int i = 0; i < parList->children_count(); i++) {
                         std::string name = parList->children(i)->name();
-                        localEnv->set(name, m_args->children(i)->eval(env));
+                        localEnv->add(name, m_args->children(i)->eval(env));
                     }
 
                     return funcValue->call(localEnv);
@@ -452,7 +454,7 @@ class FunctionNode : public ASTNode {
         }
     public:
         virtual Value* eval(Enveronment* env) {
-            env->set(m_name->name(), new FuncValue(m_body));
+            env->add(m_name->name(), new FuncValue(m_body));
             //cout << "adding a function named: " << "<" << m_name->name() << ">" << endl;
             //cout << " with block size = " << "<" << m_body->getBlock()->children_count() << ">" << endl;
               

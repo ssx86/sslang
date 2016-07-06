@@ -16,15 +16,24 @@ class Enveronment {
         typedef map<std::string, Value*>::iterator IterType;
         Enveronment* next;
 
-        void set(std::string name, Value* value) ;
+        void add(std::string name, Value* value);
+        bool update(std::string name, Value* value);
 
-        Value* get(std::string name) {
+        Value* find(std::string name) {
+            return get(name, false);
+        }
+
+        Value* get(std::string name, bool force = true) {
             IterType it = names.find(name);
             if(it == names.end()) 
             {
                 if(next == NULL) {
-                    cerr << "undefined name: " << name << endl;
-                    exit(0);
+                    if(force) {
+                        cerr << "undefined name: " << name << endl;
+                        exit(0);
+                    } else {
+                        return NULL;
+                    }
                 } else {
                     return next->get(name);
                 }
@@ -104,9 +113,8 @@ class DoubleValue : public Value {
             return m_value != 0;
         }
         std::string tostring() {
-            cout << "double value" << endl;
             char temp[100];
-            sprintf(temp, "%f", m_value);
+            sprintf(temp, "%.13f", m_value);
             return std::string(temp);
         }
         virtual Type type() {
@@ -251,7 +259,10 @@ class BinExpEval {
     // div
     static Value* DivOp(Value* left, Value* right) {
         if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new IntValue(left->intValue() / right->intValue());
+            if(left->intValue() % right->intValue() == 0)
+                return new IntValue(left->intValue() / right->intValue());
+            else
+                return new DoubleValue(left->doubleValue() / right->doubleValue());
         } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
             return new DoubleValue(left->doubleValue() / right->intValue());
         } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {

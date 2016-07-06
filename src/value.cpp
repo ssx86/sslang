@@ -9,6 +9,21 @@ Value* FuncValue::call(Enveronment* env) {
     }
 
 }
-void Enveronment::set(std::string name, Value* value) {
+void Enveronment::add(std::string name, Value* value) {
     names[name] = value;
+}
+
+bool Enveronment::update(std::string name, Value* value) {
+    IterType it = names.find(name);
+    if(it == names.end()) 
+    {
+        if(next == NULL) {
+                return false;
+        } else {
+            return next->update(name, value);
+        }
+    } else {
+        it->second = value;
+        return true;
+    }
 }
