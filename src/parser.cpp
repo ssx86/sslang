@@ -806,7 +806,7 @@ ASTNode* Parser::exp() {
  */
 ASTNode* Parser::_exp(ASTNode* prefix) {
     enter("_exp");
-
+    return NULL;
 }
 
 /*
@@ -983,11 +983,16 @@ NameListNode* Parser::parlist() {
 ASTNode* Parser::tableconstructor() {
     enter("tableconstructor");
     next(Token::LB);
-    ASTNode* fieldlistNode = fieldlist();
+
+    TableNode* tableNode = new TableNode;
+    FieldListNode* fieldlistNode = fieldlist();
+
     next(Token::RB);
 
+    tableNode->setField(fieldlistNode);
+
     leave();
-    return fieldlistNode;
+    return tableNode;
 }
 
 /*
@@ -1019,6 +1024,7 @@ FieldNode* Parser::field() {
     if (match(Token::LBRACKET) ) {
         next(Token::LBRACKET);
         ASTNode* keyNode = exp();
+        next(Token::RBRACKET);
         next(Token::ASSIGN);
         ASTNode* valueNode = exp();
         fieldNode->setKey(keyNode);
@@ -1032,7 +1038,7 @@ FieldNode* Parser::field() {
         fieldNode->setValue(valueNode);
     } else {
         ASTNode* keyNode = exp();
-        fieldNode->setKey(keyNode);
+        fieldNode->setValue(keyNode);
     }
     leave();
     return fieldNode;

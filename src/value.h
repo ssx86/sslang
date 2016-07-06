@@ -2,6 +2,7 @@
 #define _SS_VALUE_H_
 
 #include <map>
+#include <vector>
 #include <iostream>
 #include <string>
 
@@ -46,6 +47,7 @@ class IntValue;
 class DoubleValue;
 class StringValue;
 class BoolValue;
+class TableValue;
 
 class Value {
     public:
@@ -55,6 +57,7 @@ class Value {
             STRING, 
             BOOL,
             FUNC,
+            TABLE,
             DUMMY
         } Type;
 
@@ -99,6 +102,60 @@ class StringValue : public Value {
         }
     private:
         std::string m_value;
+};
+
+class TableValue : public Value {
+    public:
+        virtual std::string tostring() {
+            std::string str = "{";
+            for(int i = 0; i < m_array.size(); i++) {
+                str += m_array[i]->tostring();
+                if (i < m_array.size() - 1) {
+                    str += ", ";
+                }
+            }
+            std::map<std::string, Value*>::iterator it; 
+            for(it = m_map.begin(); it != m_map.end(); it++) {
+                str += ", ";
+                str += it->first;
+                str += "=";
+                str += it->second->tostring();
+            }
+            str += "}";
+            return str;
+        }
+        virtual bool eq(Value* other) {
+            return this == other;
+        }
+
+        virtual Type type() {
+            return TABLE;
+        }
+
+        virtual std::string stringValue() {
+            return "";
+        }
+        virtual bool boolValue() {
+            return true;
+        }
+        virtual double doubleValue() {
+            return 0.0;
+        }
+        virtual int intValue() {
+            return 0;
+        }
+
+        void setArrayValue(int pos, Value* value) {
+            if(pos >= m_array.size() )
+                m_array.resize(pos+1);
+            m_array[pos] = value;
+        }
+        void setMapValue(std::string name, Value* value) {
+            m_map[name] = value;
+        }
+    private:
+        std::vector<Value*> m_array;
+        std::map<std::string, Value*> m_map;
 };
 
 class DoubleValue : public Value {
@@ -359,5 +416,6 @@ class BinExpEval {
     }
 
 };
+
 
 #endif

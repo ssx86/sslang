@@ -109,6 +109,13 @@ class FieldNode : public ASTNode {
         void setKey(ASTNode* key) {
             m_key = key;
         }
+
+        ASTNode* getKey() {
+            return m_key;
+        }
+        ASTNode* getValue() {
+            return m_value;
+        }
         void setValue(ASTNode* value) {
             m_value = value;
         }
@@ -287,11 +294,7 @@ class AssignNode : public ASTNode {
 class FieldListNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
-            for(int i = 0; i < m_children.size(); i++) {
-                std::cout << children(i)->eval(env)->tostring() << std::endl;
-            }
-            Value* value = new StringValue("<FieldListNode>");
-            return value;
+            return NULL; // never eval
         }
 };
 
@@ -610,5 +613,38 @@ class UnopExpNode : public ASTNode {
       }
     }
 };
+
+class TableNode : public ASTNode {
+    public:
+        void setField(FieldListNode* fieldlist) {
+            m_fieldlist = fieldlist;
+        }
+
+    public:
+        virtual Value* eval(Enveronment* env) {
+            TableValue* table = new TableValue();
+            int pos = 0;
+            for(int i = 0; i < m_fieldlist->children_count(); i++) {
+                FieldNode* fieldNode = dynamic_cast<FieldNode*>(m_fieldlist->children(i));
+                if ( ASTNode* key = fieldNode->getKey() ) {
+                    // map
+                    if ( NameNode* name = dynamic_cast<NameNode*>(key) ) {
+                        table->setMapValue(name->name(), fieldNode->getValue()->eval(env));
+                    } else {
+                        int index = key->eval(env)->intValue();
+                        table->setArrayValue(index, fieldNode->getValue()->eval(env));
+                        pos = index + 1;
+                    }
+                } else {
+                    table->setArrayValue(pos, fieldNode->getValue()->eval(env));
+                    pos++;
+                }
+            }
+            return table;
+        }
+    private:
+        FieldListNode* m_fieldlist;
+};
+       
 
 #endif
