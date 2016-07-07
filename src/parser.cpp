@@ -46,6 +46,10 @@ void Parser::leave() {
 
 }
 
+ASTNode* NameToString(NameNode* node) {
+    return new LeafNode(node->name());
+}
+
 Parser::Parser(Lexer* lexer) 
     : level(-1), m_root(NULL) {
         m_pLexer = lexer;
@@ -620,7 +624,7 @@ ASTNode* Parser::var() {
             //next is Name
             TableAccessNode* tableAccessNode = new TableAccessNode;
             tableAccessNode->setTable(node);
-            ASTNode* nameNode = name();
+            ASTNode* nameNode = NameToString(name());
             tableAccessNode->setIndex(nameNode);
              
             //change node pointer;
@@ -661,7 +665,7 @@ ASTNode* Parser::_var(ASTNode* prefix) {
         TableAccessNode* tableAccessNode = new TableAccessNode;
         tableAccessNode->setTable(prefix);
 
-        tableAccessNode->setIndex(name());
+        tableAccessNode->setIndex(NameToString(name()));
 
         //change prefix pointer
         prefix = tableAccessNode;

@@ -54,7 +54,7 @@ class BlockNode : public ASTNode {
                     break;
                 }
             }
-            assert(value);
+            //assert(value);
             return value;
         }
 };
@@ -81,7 +81,7 @@ class LeafNode : public ASTNode {
         LeafNode() { //TODO value nil!!!
             m_value = new StringValue("nil");
         }
-        LeafNode(std::string &s) {
+        LeafNode(std::string s) {
             m_value = new StringValue(s);
         }
         LeafNode(int i) {
@@ -240,7 +240,7 @@ class ForNode : public ASTNode {
 
                 env->update(m_name->name(), new IntValue(from));
             }
-            assert(value);
+            //assert(value);
             return value;
         }
     private:
@@ -269,8 +269,11 @@ class TableAccessNode : public ASTNode {
         }
     public:
         virtual Value* eval(Enveronment* env) {
-            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
-                std::string name = nameNode->name();
+            //TODO here is wrong!
+            Value* vIndex = m_index->eval(env);
+            if (StringValue* sname = dynamic_cast<StringValue*>(vIndex)) { // map
+
+                std::string name = sname->stringValue();
 
                 TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
 
@@ -282,8 +285,9 @@ class TableAccessNode : public ASTNode {
             }
         }
         Value*& lvalue(Enveronment* env) {
-            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
-                std::string name = nameNode->name();
+            Value* vIndex = m_index->eval(env);
+            if (StringValue* sname = dynamic_cast<StringValue*>(vIndex)) { // map
+                std::string name = sname->stringValue();
 
                 TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
 
