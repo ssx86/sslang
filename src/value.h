@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cassert>
 
 using namespace std;
 
@@ -23,6 +24,26 @@ class Enveronment {
         Value* find(std::string name) {
             return get(name, false);
         }
+        /*
+        Value*& lvalue(std::string name) {
+            return getlValue(name, false);
+        }
+
+        Value*& get(std::string name) {
+            IterType it = names.find(name);
+            if(it == names.end()) 
+            {
+                if(next == NULL) {
+                    cerr << "undefined name: " << name << endl;
+                    exit(0);
+                } else {
+                    return next->get(name);
+                }
+            } else {
+                return it->second;
+            }
+        }
+        */
 
         Value* get(std::string name, bool force = true) {
             IterType it = names.find(name);
@@ -38,8 +59,9 @@ class Enveronment {
                 } else {
                     return next->get(name);
                 }
+            } else {
+                return it->second;
             }
-            return it->second;
         }
 };
 
@@ -145,17 +167,30 @@ class TableValue : public Value {
             return 0;
         }
 
-        Value* getArrayValue(int index) {
-            return m_array[index];
+        int getLength() {
+            return m_array.size();
+        }
+
+        Value*& getArraylValue(int index) {
+            assert(index > 0);
+            return m_array[index - 1];
+        }
+        Value*& getMaplValue(std::string name) {
+            return m_map[name];
+        }
+        Value* getArrayValue(int pos) {
+            assert(pos > 0);
+            return m_array[pos - 1];
         }
         Value* getMapValue(std::string name) {
             return m_map[name];
         }
 
         void setArrayValue(int pos, Value* value) {
-            if(pos >= m_array.size() )
-                m_array.resize(pos+1);
-            m_array[pos] = value;
+            assert(pos > 0);
+            if(pos-1 >= m_array.size() )
+                m_array.resize(pos);
+            m_array[pos-1] = value;
         }
         void setMapValue(std::string name, Value* value) {
             m_map[name] = value;

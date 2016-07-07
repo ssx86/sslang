@@ -259,6 +259,47 @@ class EmptyNode : public ASTNode {
         }
 };
 
+class TableAccessNode : public ASTNode {
+    public:
+        void setTable(ASTNode* table) {
+            m_table = table;
+        }
+        void setIndex(ASTNode* index) {
+            m_index = index;
+        }
+    public:
+        virtual Value* eval(Enveronment* env) {
+            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
+                std::string name = nameNode->name();
+
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+
+                return table->getMapValue(name);
+            } else {  // array
+                int index = m_index->eval(env)->intValue();
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+                return table->getArrayValue(index);
+            }
+        }
+        Value*& lvalue(Enveronment* env) {
+            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
+                std::string name = nameNode->name();
+
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+
+                return table->getMaplValue(name);
+            } else {  // array
+                int index = m_index->eval(env)->intValue();
+                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+                return table->getArraylValue(index);
+            }
+        }
+
+
+    private:
+        ASTNode* m_table;
+        ASTNode* m_index;
+};
 class AssignNode : public ASTNode {
     public:
         void addVar(ASTNode* var) {
@@ -278,7 +319,15 @@ class AssignNode : public ASTNode {
                         env->add(varName, value);
                     }
                 } else {
-                    std::cout << "error reading var name" << std::endl;
+                    
+                    TableAccessNode* pTableAccess = dynamic_cast<TableAccessNode*>(m_vars[i]);
+                    if (pTableAccess) {
+                        Value*& lvalue = pTableAccess->lvalue(env);
+                        value = m_exps[i]->eval(env);
+                        lvalue = value;
+                    } else {
+                        std::cout << "error reading var name" << std::endl;
+                    }
                 }
 
             }
@@ -605,7 +654,15 @@ class UnopExpNode : public ASTNode {
             exit(1);
           }
         case Token::SHARP:
-          return m_exp->eval(env);
+          {
+              TableValue* vTable = dynamic_cast<TableValue*>(m_exp->eval(env));
+              if (vTable) {
+                  return new IntValue(vTable->getLength());
+              } else {
+                  cout << "error not table" << endl;
+                  exit(1);
+              }
+          }
         case Token::NOT:
             return new BoolValue( ! m_exp->eval(env)->boolValue() );
         default:
@@ -623,7 +680,7 @@ class TableNode : public ASTNode {
     public:
         virtual Value* eval(Enveronment* env) {
             TableValue* table = new TableValue();
-            int pos = 0;
+            int pos = 1;
             for(int i = 0; i < m_fieldlist->children_count(); i++) {
                 FieldNode* fieldNode = dynamic_cast<FieldNode*>(m_fieldlist->children(i));
                 if ( ASTNode* key = fieldNode->getKey() ) {
@@ -646,32 +703,5 @@ class TableNode : public ASTNode {
         FieldListNode* m_fieldlist;
 };
        
-class TableAccessNode : public ASTNode {
-    public:
-        void setTable(ASTNode* table) {
-            m_table = table;
-        }
-        void setIndex(ASTNode* index) {
-            m_index = index;
-        }
-    public:
-        virtual Value* eval(Enveronment* env) {
-            if ( NameNode* nameNode = dynamic_cast<NameNode*>(m_index) ) { // map
-                std::string name = nameNode->name();
-
-                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
-
-                return table->getMapValue(name);
-            } else {  // array
-                int index = m_index->eval(env)->intValue();
-                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
-                return table->getArrayValue(index);
-            }
-        }
-
-    private:
-        ASTNode* m_table;
-        ASTNode* m_index;
-};
 
 #endif
