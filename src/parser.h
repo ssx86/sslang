@@ -70,7 +70,6 @@ class Parser
         ExpListNode* explist() ;
         ASTNode* exp() ;
         ASTNode* singleExp() ;
-        ASTNode* _exp(ASTNode* prefix) ;
         ASTNode* prefixexp() ;
         ASTNode* _prefixexp(ASTNode* prefix) ;
         FuncCallNode* functioncall(ASTNode* prefixexpNode, ASTNode* argsNode) ;

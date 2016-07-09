@@ -835,14 +835,6 @@ ASTNode* Parser::exp() {
 
 }
 
-/* 
- * `exp ::= binop exp | nil
- */
-ASTNode* Parser::_exp(ASTNode* prefix) {
-    enter("_exp");
-    return NULL;
-}
-
 /*
  * // prefixexp ::= var | functioncall | ‘(’ exp ‘)’
  * prefixexp ::= var `prefixexp  | ( exp ) `prefixexp
