@@ -9,67 +9,8 @@
 
 using namespace std;
 
-class Value;
-class Enveronment {
-    public:
-        Enveronment() : next(NULL) {}
+class Enveronment ;
 
-        map<std::string, Value*> names;
-        typedef map<std::string, Value*>::iterator IterType;
-        Enveronment* next;
-
-        void add(std::string name, Value* value);
-        bool update(std::string name, Value* value);
-
-        Value* find(std::string name) {
-            return get(name, false);
-        }
-        /*
-        Value*& lvalue(std::string name) {
-            return getlValue(name, false);
-        }
-
-        Value*& get(std::string name) {
-            IterType it = names.find(name);
-            if(it == names.end()) 
-            {
-                if(next == NULL) {
-                    cerr << "undefined name: " << name << endl;
-                    exit(0);
-                } else {
-                    return next->get(name);
-                }
-            } else {
-                return it->second;
-            }
-        }
-        */
-
-        Value* get(std::string name, bool force = true) {
-            IterType it = names.find(name);
-            if(it == names.end()) 
-            {
-                if(next == NULL) {
-                    if(force) {
-                        cerr << "undefined name: " << name << endl;
-                        exit(0);
-                    } else {
-                        return NULL;
-                    }
-                } else {
-                    return next->get(name);
-                }
-            } else {
-                return it->second;
-            }
-        }
-};
-
-class IntValue;
-class DoubleValue;
-class StringValue;
-class BoolValue;
-class TableValue;
 
 class Value {
     public:
@@ -80,6 +21,7 @@ class Value {
             BOOL,
             FUNC,
             TABLE,
+            NIL,
             DUMMY
         } Type;
 
@@ -251,6 +193,29 @@ class BoolValue : public Value {
 };
 
 class NilValue : public Value {
+    public:
+        virtual std::string tostring() {
+            return "nil";
+        }
+        virtual bool eq(Value* other) {
+            return dynamic_cast<NilValue*>(other);
+        }
+        virtual Type type() {
+            return NIL;
+        }
+
+        virtual std::string stringValue() {
+            return "nil";
+        }
+        virtual bool boolValue() {
+            return false;
+        }
+        virtual double doubleValue() {
+            return 0.0;
+        }
+        virtual int intValue() {
+            return 0;
+        }
 };
 
 class FuncBodyNode;
@@ -457,6 +422,32 @@ class BinExpEval {
         return new StringValue(left->tostring() + right->tostring());
     }
 
+};
+
+class Enveronment {
+    public:
+        Enveronment() : next(NULL) {}
+
+        map<std::string, Value*> names;
+        typedef map<std::string, Value*>::iterator IterType;
+        Enveronment* next;
+
+        void add(std::string name, Value* value);
+        bool update(std::string name, Value* value);
+
+        Value* get(std::string name) {
+            IterType it = names.find(name);
+            if(it == names.end()) 
+            {
+                if(next == NULL) {
+                    return new NilValue;
+                } else {
+                    return next->get(name);
+                }
+            } else {
+                return it->second;
+            }
+        }
 };
 
 

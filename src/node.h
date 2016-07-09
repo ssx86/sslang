@@ -279,9 +279,14 @@ class TableAccessNode : public ASTNode {
 
                 return table->getMapValue(name);
             } else {  // array
-                int index = m_index->eval(env)->intValue();
-                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
-                return table->getArrayValue(index);
+                Value* vIndex = m_index->eval(env);
+                if (! dynamic_cast<NilValue*>(vIndex) ) {
+                    int index = vIndex->intValue();
+                    TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+                    return table->getArrayValue(index);
+                } else {
+                    return new NilValue;
+                }
             }
         }
         Value*& lvalue(Enveronment* env) {
@@ -293,9 +298,15 @@ class TableAccessNode : public ASTNode {
 
                 return table->getMaplValue(name);
             } else {  // array
-                int index = m_index->eval(env)->intValue();
-                TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
-                return table->getArraylValue(index);
+                Value* vIndex = m_index->eval(env);
+                if (! dynamic_cast<NilValue*>(vIndex) ) {
+                    int index = vIndex->intValue();
+                    TableValue* table = dynamic_cast<TableValue*>(m_table->eval(env));
+                    return table->getArraylValue(index);
+                } else {
+                    cerr << "table index is nil" << endl;
+                    exit(1);
+                }
             }
         }
 
