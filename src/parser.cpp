@@ -616,7 +616,7 @@ ASTNode* Parser::var() {
             //change node pointer;
             node = tableAccessNode;
 
-            cout << "accessing table" << endl;
+            std::cout << "accessing table" << std::endl;
 
         }
         else if (match(Token::DOT)) {

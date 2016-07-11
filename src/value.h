@@ -1,16 +1,25 @@
 #ifndef _SS_VALUE_H_
 #define _SS_VALUE_H_
 
-#include <map>
 #include <vector>
-#include <iostream>
 #include <string>
-#include <cassert>
+#include <map>
 
-using namespace std;
+class Value;
 
-class Enveronment ;
+class Enveronment {
+    public:
+        Enveronment();
 
+        std::map<std::string, Value*> names;
+        typedef std::map<std::string, Value*>::iterator IterType;
+        Enveronment* next;
+
+        void add(std::string name, Value* value);
+        bool update(std::string name, Value* value);
+
+        Value* get(std::string name);
+};
 
 class Value {
     public:
@@ -29,114 +38,45 @@ class Value {
         virtual bool eq(Value* other) = 0;
         virtual Type type() = 0;
 
-        virtual std::string stringValue() {
-            return "";
-        }
-        virtual bool boolValue() {
-            return true;
-        }
-        virtual double doubleValue() {
-            return 0.0;
-        }
-        virtual int intValue() {
-            return 0;
-        }
+        virtual std::string stringValue();
+        virtual bool boolValue();
+        virtual double doubleValue();
+        virtual int intValue();
 };
 
 class StringValue : public Value {
     public:
-        StringValue(const char* str) {
-            m_value = str;
-        }
-        StringValue(std::string str) {
-            m_value = str;
-        }
-        std::string stringValue() {
-            return m_value;
-        }
+        StringValue(const char* str);
+        StringValue(std::string str);
+        std::string stringValue();
 
-        std::string tostring() {
-            return m_value;
-        }
-        virtual Type type() {
-            return STRING;
-        }
-        virtual bool eq(Value* other) {
-            return type() == other->type() && m_value == other->stringValue();
-        }
+        std::string tostring();
+        virtual Type type();
+        virtual bool eq(Value* other);
     private:
         std::string m_value;
 };
 
 class TableValue : public Value {
     public:
-        virtual std::string tostring() {
-            std::string str = "{";
-            for(int i = 0; i < m_array.size(); i++) {
-                str += m_array[i]->tostring();
-                if (i < m_array.size() - 1) {
-                    str += ", ";
-                }
-            }
-            std::map<std::string, Value*>::iterator it; 
-            for(it = m_map.begin(); it != m_map.end(); it++) {
-                str += ", ";
-                str += it->first;
-                str += "=";
-                str += it->second->tostring();
-            }
-            str += "}";
-            return str;
-        }
-        virtual bool eq(Value* other) {
-            return this == other;
-        }
+        virtual std::string tostring();
+        virtual bool eq(Value* other);
+        virtual Type type();
 
-        virtual Type type() {
-            return TABLE;
-        }
+        virtual std::string stringValue();
+        virtual bool boolValue();
+        virtual double doubleValue();
+        virtual int intValue();
 
-        virtual std::string stringValue() {
-            return "";
-        }
-        virtual bool boolValue() {
-            return true;
-        }
-        virtual double doubleValue() {
-            return 0.0;
-        }
-        virtual int intValue() {
-            return 0;
-        }
+        int getLength();
 
-        int getLength() {
-            return m_array.size();
-        }
+        Value*& getArraylValue(int index);
+        Value*& getMaplValue(std::string name);
+        Value* getArrayValue(int pos);
+        Value* getMapValue(std::string name);
 
-        Value*& getArraylValue(int index) {
-            assert(index > 0);
-            return m_array[index - 1];
-        }
-        Value*& getMaplValue(std::string name) {
-            return m_map[name];
-        }
-        Value* getArrayValue(int pos) {
-            assert(pos > 0);
-            return m_array[pos - 1];
-        }
-        Value* getMapValue(std::string name) {
-            return m_map[name];
-        }
-
-        void setArrayValue(int pos, Value* value) {
-            assert(pos > 0);
-            if(pos-1 >= m_array.size() )
-                m_array.resize(pos);
-            m_array[pos-1] = value;
-        }
-        void setMapValue(std::string name, Value* value) {
-            m_map[name] = value;
-        }
+        void setArrayValue(int pos, Value* value);
+        void setMapValue(std::string name, Value* value);
     private:
         std::vector<Value*> m_array;
         std::map<std::string, Value*> m_map;
@@ -144,129 +84,62 @@ class TableValue : public Value {
 
 class DoubleValue : public Value {
     public:
-        DoubleValue(double d) {
-            m_value = d;
-        }
-        double doubleValue() {
-            return m_value;
-        }
-        virtual bool boolValue() {
-            return m_value != 0;
-        }
-        std::string tostring() {
-            char temp[100];
-            sprintf(temp, "%.13f", m_value);
-            return std::string(temp);
-        }
-        virtual Type type() {
-            return INT;
-        }
-        virtual bool eq(Value* other) {
-            return type() == other->type() && m_value == other->doubleValue();
-        }
+        DoubleValue(double d);
+        double doubleValue();
+        virtual bool boolValue();
+        std::string tostring();
+        virtual Type type();
+        virtual bool eq(Value* other);
     private :
         double m_value;
 };
 
 class BoolValue : public Value {
     public:
-        BoolValue(bool b) {
-            m_value = b;
-        }
-        bool boolValue() {
-            return m_value;
-        }
-        std::string tostring() {
-            if(m_value) 
-                return "true";
-            else
-                return "false";
-        }
-        virtual Type type() {
-            return BOOL;
-        }
-        virtual bool eq(Value* other) {
-            return m_value == other->boolValue();
-        }
+        BoolValue(bool b);
+        bool boolValue();
+        std::string tostring();
+        virtual Type type();
+        virtual bool eq(Value* other);
     private:
         bool m_value;
 };
 
 class NilValue : public Value {
     public:
-        virtual std::string tostring() {
-            return "nil";
-        }
-        virtual bool eq(Value* other) {
-            return dynamic_cast<NilValue*>(other);
-        }
-        virtual Type type() {
-            return NIL;
-        }
+        virtual std::string tostring();
+        virtual bool eq(Value* other);
+        virtual Type type();
 
-        virtual std::string stringValue() {
-            return "nil";
-        }
-        virtual bool boolValue() {
-            return false;
-        }
-        virtual double doubleValue() {
-            return 0.0;
-        }
-        virtual int intValue() {
-            return 0;
-        }
+        virtual std::string stringValue();
+        virtual bool boolValue();
+        virtual double doubleValue();
+        virtual int intValue();
 };
 
 class FuncBodyNode;
 class FuncValue : public Value {
     public:
-        FuncValue(FuncBodyNode* body) {
-            m_body = body;
-        }
-        FuncBodyNode* getBodyNode() {
-            return m_body;
-        }
+        FuncValue(FuncBodyNode* body);
+        FuncBodyNode* getBodyNode();
         Value* call(Enveronment* env);
 
     public:
         FuncBodyNode* m_body;
-        std::string tostring() {
-            return "function value";
-        }
-        virtual Type type() {
-            return FUNC;
-        }
-        virtual bool eq(Value* other) {
-            return other == this; // address equal
-        }
+        std::string tostring();
+        virtual Type type();
+        virtual bool eq(Value* other);
 };
 
 class IntValue : public Value {
     public:
-        IntValue(int i) {
-            m_value = i;
-        }
-        int intValue() { 
-            return m_value;
-        }
-        double doubleValue() {
-            return m_value;
-        }
-        virtual bool boolValue() {
-            return m_value != 0;
-        }
-        std::string tostring() {
-            char temp[100];
-            sprintf(temp, "%d", m_value);
-            return std::string(temp);
-        }
-        virtual Type type() {
-            return INT;
-        }
-        virtual bool eq(Value* other) {
-            return type() == other->type() && m_value == other->intValue();
-        }
+        IntValue(int i);
+        int intValue();
+        double doubleValue();
+        virtual bool boolValue();
+        std::string tostring();
+        virtual Type type();
+        virtual bool eq(Value* other);
     private :
         int m_value;
 };
@@ -275,179 +148,43 @@ class BinExpEval {
     public:
 
     // add
-    static Value* AddOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new IntValue(left->intValue() + right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new DoubleValue(left->doubleValue() + right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->intValue() + right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->doubleValue() + right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-
-    }
+    static Value* AddOp(Value* left, Value* right);
 
     // sub
-    static Value* SubOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new IntValue(left->intValue() - right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new DoubleValue(left->doubleValue() - right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->intValue() - right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->doubleValue() - right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* SubOp(Value* left, Value* right);
 
     // mul
-    static Value* MulOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new IntValue(left->intValue() * right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new DoubleValue(left->doubleValue() * right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->intValue() * right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->doubleValue() * right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* MulOp(Value* left, Value* right);
    
     // div
-    static Value* DivOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            if(left->intValue() % right->intValue() == 0)
-                return new IntValue(left->intValue() / right->intValue());
-            else
-                return new DoubleValue(left->doubleValue() / right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new DoubleValue(left->doubleValue() / right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->intValue() / right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new DoubleValue(left->doubleValue() / right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* DivOp(Value* left, Value* right);
 
     // and
-    static Value* AndOp(Value* left, Value* right) {
-        return new BoolValue(left->boolValue() && right->boolValue());
-    }
+    static Value* AndOp(Value* left, Value* right);
 
     // or
-    static Value* OrOp(Value* left, Value* right) {
-        return new BoolValue(left->boolValue() || right->boolValue());
-    }
+    static Value* OrOp(Value* left, Value* right);
 
     // eq
-    static Value* EqOp(Value* left, Value* right) {
-        return new BoolValue(left->eq(right));
-    }
+    static Value* EqOp(Value* left, Value* right);
 
     // gt
-    static Value* GTOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->intValue() > right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->doubleValue() > right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->intValue() > right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->doubleValue() > right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* GTOp(Value* left, Value* right);
 
     // ge
-    static Value* GEOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->intValue() >= right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->doubleValue() >= right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->intValue() >= right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->doubleValue() >= right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* GEOp(Value* left, Value* right);
 
     // lt
-    static Value* LTOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->intValue() < right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->doubleValue() < right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->intValue() < right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->doubleValue() < right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* LTOp(Value* left, Value* right);
 
     // le
-    static Value* LEOp(Value* left, Value* right) {
-        if(dynamic_cast<IntValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->intValue() <= right->intValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<IntValue*>(right)) {
-            return new BoolValue(left->doubleValue() <= right->intValue());
-        } else if(dynamic_cast<IntValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->intValue() <= right->doubleValue());
-        } else if(dynamic_cast<DoubleValue*>(left) && dynamic_cast<DoubleValue*>(right)) {
-            return new BoolValue(left->doubleValue() <= right->doubleValue());
-        } else {
-            return new StringValue("Error Bin op");
-        }
-    }
+    static Value* LEOp(Value* left, Value* right);
 
     // ne
-    static Value* NEOp(Value* left, Value* right) {
-        return new BoolValue(! left->eq(right));
-    }
+    static Value* NEOp(Value* left, Value* right);
 
-    static Value* ConcatOp(Value* left, Value* right) {
-        return new StringValue(left->tostring() + right->tostring());
-    }
+    static Value* ConcatOp(Value* left, Value* right);
 
-};
-
-class Enveronment {
-    public:
-        Enveronment() : next(NULL) {}
-
-        map<std::string, Value*> names;
-        typedef map<std::string, Value*>::iterator IterType;
-        Enveronment* next;
-
-        void add(std::string name, Value* value);
-        bool update(std::string name, Value* value);
-
-        Value* get(std::string name) {
-            IterType it = names.find(name);
-            if(it == names.end()) 
-            {
-                if(next == NULL) {
-                    return new NilValue;
-                } else {
-                    return next->get(name);
-                }
-            } else {
-                return it->second;
-            }
-        }
 };
 
 

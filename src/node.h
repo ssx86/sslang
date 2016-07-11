@@ -223,7 +223,7 @@ class CondNode {
 
 class IfNode : public ASTNode {
     public:
-        vector<CondNode*> m_conds;
+        std::vector<CondNode*> m_conds;
         void addCond(CondNode* cond);
         virtual Value* eval(Enveronment* env);
 };
