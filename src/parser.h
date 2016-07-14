@@ -62,7 +62,7 @@ class Parser
 
         RetNode* retstat() ;
         LabelNode* label() ;
-        FuncNameNode* funcname() ;
+        ASTNode* funcname() ;
         VarListNode* varlist() ;
         ASTNode* var() ;
         ASTNode* _var(ASTNode* prefix) ;

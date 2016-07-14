@@ -357,8 +357,10 @@ FunctionNode* Parser::function_stat() {
     next("function");
     FunctionNode* node = new FunctionNode;
     //funcname
-    node->setName(funcname());
+    ASTNode *name = funcname();
+    node->setName(name);
     node->setBody(funcbody());
+
     leave();
     return node;
 }
@@ -543,23 +545,39 @@ LabelNode* Parser::label() {
 /*
  * funcname ::= Name {‘.’ Name} [‘:’ Name]
  */
-FuncNameNode* Parser::funcname() {
+ASTNode* Parser::funcname() {
     enter("funcname");
-    FuncNameNode* node = new FuncNameNode();
-    node->setName(name());
+
+    std::vector<NameNode*> names;
+    names.push_back(name());
 
     while(match(Token::DOT)) {
         next();
-        node->appendName(name());
+        names.push_back(name());
     }
     if( match(Token::COLON) ) {
         next();
-        node->appendName(name());
+        names.push_back(name());
     }
 
-    leave();
-    return node;
+    if(names.size() > 1) { // name.name
+        int i = 0;
+        ASTNode* pTable = names[i];
+        while(i < names.size() - 1) {
+            TableAccessNode* tableAccessNode = new TableAccessNode;
+            tableAccessNode->setTable(pTable);
+            tableAccessNode->setIndex(NameToString(names[i+1]));
+            pTable = tableAccessNode;
+            i++;
+        }
+        leave();
+        return pTable;
+    } else {
+        leave();
+        return names[0];
+    }
 }
+
 
 /*
  * varlist ::= var {‘,’ var}
@@ -616,7 +634,6 @@ ASTNode* Parser::var() {
             //change node pointer;
             node = tableAccessNode;
 
-            std::cout << "accessing table" << std::endl;
 
         }
         else if (match(Token::DOT)) {
@@ -624,7 +641,8 @@ ASTNode* Parser::var() {
             //next is Name
             TableAccessNode* tableAccessNode = new TableAccessNode;
             tableAccessNode->setTable(node);
-            ASTNode* nameNode = NameToString(name());
+            NameNode* pName = name();
+            ASTNode* nameNode = NameToString(pName);
             tableAccessNode->setIndex(nameNode);
              
             //change node pointer;
@@ -665,7 +683,9 @@ ASTNode* Parser::_var(ASTNode* prefix) {
         TableAccessNode* tableAccessNode = new TableAccessNode;
         tableAccessNode->setTable(prefix);
 
-        tableAccessNode->setIndex(NameToString(name()));
+        NameNode* pName = name();
+
+        tableAccessNode->setIndex(NameToString(pName));
 
         //change prefix pointer
         prefix = tableAccessNode;
@@ -866,10 +886,18 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
 
     if ( match (Token::COLON) ) {
         next();
-        prefix->addChild(name());
+
+        TableAccessNode* tableAccessNode = new TableAccessNode;
+        tableAccessNode->setTable(prefix);
+        NameNode* n = name();
+        tableAccessNode->setIndex(n);
+
         ASTNode* argsNode = args();
-        prefix->addChild(argsNode);
-        prefix = _prefixexp(prefix);
+        FuncCallNode* funcCallNode = functioncall(tableAccessNode, argsNode);
+
+        ASTNode* node = funcCallNode;
+
+        prefix = _prefixexp(node);
         leave();
 
         return prefix;
@@ -877,8 +905,9 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
         ASTNode* argsNode = args();
         if (argsNode) {
             FuncCallNode* funcCallNode = functioncall(prefix, argsNode);
+            prefix = _prefixexp(funcCallNode);
             leave();
-            return funcCallNode;
+            return prefix;
         }
         else
         {
@@ -891,7 +920,7 @@ ASTNode* Parser::_prefixexp(ASTNode* prefix) {
 
 
 /*
- * functioncall ::=  prefixexp args | prefixexp ‘:’ Name args 
+ * //functioncall ::=  prefixexp args | prefixexp ‘:’ Name args 
  */
 FuncCallNode* Parser::functioncall(ASTNode* prefixexpNode, ASTNode* argsNode) {
     enter("functioncall");
@@ -1011,14 +1040,20 @@ ASTNode* Parser::tableconstructor() {
     next(Token::LB);
 
     TableNode* tableNode = new TableNode;
-    FieldListNode* fieldlistNode = fieldlist();
+    if(match(Token::RB)) { // no field list
+        next();
+        tableNode->setField(new FieldListNode);
+        leave();
+        return tableNode;
+    } else {
+        FieldListNode* fieldlistNode = fieldlist();
+        next(Token::RB);
 
-    next(Token::RB);
+        tableNode->setField(fieldlistNode);
 
-    tableNode->setField(fieldlistNode);
-
-    leave();
-    return tableNode;
+        leave();
+        return tableNode;
+    }
 }
 
 /*

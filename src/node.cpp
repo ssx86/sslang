@@ -420,46 +420,47 @@ void FuncCallNode::setArgs(ASTNode* args) {
 }
 
 void FuncCallNode::setName(ASTNode* name) {
-    m_name = name->name();
+    m_name = name;
 }
 
-void FuncCallNode::appendName(ASTNode* name) {
-    m_name += "::";
-    m_name += name->name();
-}
-
-std::string FuncCallNode::name() {
-    return m_name;
-}
 
 Value* FuncCallNode::eval(Enveronment* env) {
-    if ( m_name == "print" ) {
-        Value* value = m_args->children(0)->eval(env);
-        cout << value->tostring() << endl;
-        return value;
-    } else {
-        //cout << "find a function call, trying to run it: " << m_name << endl;
-        FuncValue* funcValue = dynamic_cast<FuncValue*>(env->get(m_name));
-
-        if (funcValue) {
-            NameListNode* parList = funcValue->getBodyNode()->getParList();
-
-            // 设置参数环境
-            Enveronment *localEnv = new Enveronment;
-            localEnv->next = env;
-
-            for(int i = 0; i < parList->children_count(); i++) {
-                std::string name = parList->children(i)->name();
-                localEnv->add(name, m_args->children(i)->eval(env));
-            }
-
-            return funcValue->call(localEnv);
+    FuncValue* funcValue = NULL;
+    if( NameNode* nameNode = dynamic_cast<NameNode*>(m_name) ) {
+        if ( nameNode->name() == "print" ) {
+            Value* value = m_args->children(0)->eval(env);
+            cout << value->tostring() << endl;
+            return value;
         } else {
-            cout << "error" << endl;
-            exit(1);
-            return NULL;
-
+            funcValue = dynamic_cast<FuncValue*>(env->get(m_name->name()));
         }
+    } else {
+        if (! dynamic_cast<TableAccessNode*>(m_name) ) {
+            std::cout << "fuck wrong!!!" << std::endl;
+            exit(1);
+        }
+
+        funcValue = dynamic_cast<FuncValue*>(m_name->eval(env));
+    }
+
+    if (funcValue) {
+        NameListNode* parList = funcValue->getBodyNode()->getParList();
+
+        // 设置参数环境
+        Enveronment *localEnv = new Enveronment;
+        localEnv->next = env;
+
+        for(int i = 0; i < parList->children_count(); i++) {
+            std::string name = parList->children(i)->name();
+            localEnv->add(name, m_args->children(i)->eval(env));
+        }
+
+        return funcValue->call(localEnv);
+    } else {
+        cout << "error, not found function" << endl;
+        exit(1);
+        return NULL;
+
     }
 }
 
@@ -500,31 +501,7 @@ Value* VarListNode::eval(Enveronment* env) {
     return value;
 }
 
-/*********************************
- * FuncNameNode
- * *******************************/
 
-FuncNameNode::FuncNameNode() {
-    m_name = "";
-}
-
-void FuncNameNode::setName(NameNode* name) {
-    m_name += name->name();
-}
-
-void FuncNameNode::appendName(NameNode* name) {
-    m_name += "::";
-    m_name += name->name();
-}
-
-std::string FuncNameNode::name() {
-    return m_name;
-}
-
-Value* FuncNameNode::eval(Enveronment* env) {
-    Value* value = new StringValue("<FuncNameNode>");
-    return value;
-}
 
 /*********************************
  * LabelNode
@@ -542,7 +519,7 @@ Value* LabelNode::eval(Enveronment* env) {
  * FunctionNode
  * *******************************/
 
-void FunctionNode::setName(FuncNameNode* name) {
+void FunctionNode::setName(ASTNode* name) {
     m_name = name;
 }
 
@@ -551,7 +528,18 @@ void FunctionNode::setBody(FuncBodyNode* body) {
 }
 
 Value* FunctionNode::eval(Enveronment* env) {
-    env->add(m_name->name(), new FuncValue(m_body));
+    NameNode* pName = dynamic_cast<NameNode*>(m_name);
+    if(pName) {
+        env->add(m_name->name(), new FuncValue(m_body));
+    } else {
+        TableAccessNode* pTableAccess = dynamic_cast<TableAccessNode*>(m_name);
+        if (pTableAccess) {
+            Value*& lvalue = pTableAccess->lvalue(env);
+            lvalue = new FuncValue(m_body);
+        } else {
+            std::cout << "error reading var name" << std::endl;
+        }
+    }
     return new StringValue("<FunctionNode>");
 }
 

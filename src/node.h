@@ -159,12 +159,10 @@ class FuncCallNode : public ASTNode {
     public:
         void setArgs(ASTNode* args);
         void setName(ASTNode* name);
-        void appendName(ASTNode* name);
-        std::string name();
         virtual Value* eval(Enveronment* env);
     private:
         ASTNode* m_args;
-        std::string m_name;
+        ASTNode* m_name;
 };
 
 
@@ -183,16 +181,6 @@ class VarListNode : public ASTNode {
         virtual Value* eval(Enveronment* env);
 };
 
-class FuncNameNode : public ASTNode {
-    public:
-        FuncNameNode();
-        void setName(NameNode* name);
-        void appendName(NameNode* name);
-        std::string name();
-        virtual Value* eval(Enveronment* env);
-    public:
-        std::string m_name;
-};
 
 class LabelNode : public ASTNode {
     public:
@@ -201,12 +189,12 @@ class LabelNode : public ASTNode {
 
 class FunctionNode : public ASTNode {
     public:
-        void setName(FuncNameNode* name);
+        void setName(ASTNode* name);
         void setBody(FuncBodyNode* body);
     public:
         virtual Value* eval(Enveronment* env);
     private:
-        FuncNameNode* m_name;
+        ASTNode* m_name;
         FuncBodyNode* m_body;
 };
 
