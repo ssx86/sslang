@@ -12,28 +12,27 @@ b(1)
 
 t = {
   a = 1,
-  b = 2
+  b = 2,
+  c = {}
 }
 
 
-t.c = 3
 
-t.fun2 = function(x)
+t.c.fun2 = function(x)
   print("in fun2");
   print(x)
 end
 
-t.c = 4
 
-t.fun1 = function(x) 
+t.c.fun1 = function(x) 
   print("in fun1");
   print(x)
 end
 
 print("fun1 value : ")
-t.fun1(1)
+t.c.fun1(1)
 
 print("fun2 value : ")
-t.fun2(4)
+t.c.fun2(4)
 
 
