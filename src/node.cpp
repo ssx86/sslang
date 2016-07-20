@@ -435,7 +435,9 @@ Value* FuncCallNode::eval(Enveronment* env) {
             funcValue = dynamic_cast<FuncValue*>(env->get(m_name->name()));
         }
     } else {
-        if (! dynamic_cast<TableAccessNode*>(m_name) ) {
+        if (! dynamic_cast<TableAccessNode*>(m_name) 
+                && ! dynamic_cast<FunctionDefNode*>(m_name) 
+                && ! dynamic_cast<FuncCallNode*>(m_name) ) {
             std::cout << "fuck wrong!!!" << std::endl;
             exit(1);
         }
@@ -457,7 +459,7 @@ Value* FuncCallNode::eval(Enveronment* env) {
 
         return funcValue->call(localEnv);
     } else {
-        cout << "error, not found function" << endl;
+        cout << "error, not found function: " << (dynamic_cast<NameNode*>(m_name))->name() << "->" << m_name->eval(env)->type() << endl;
         exit(1);
         return NULL;
 
@@ -660,7 +662,7 @@ void FunctionDefNode::setBody(FuncBodyNode* body) {
 }
 
 Value* FunctionDefNode::eval(Enveronment* env) {
-    return new FuncValue(m_body);
+    return new FuncValue(m_body, env);
 }
 
 /*********************************

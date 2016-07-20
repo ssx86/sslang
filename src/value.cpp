@@ -14,6 +14,21 @@ Enveronment::Enveronment() : next(NULL) {
 
 }
 
+Enveronment* Enveronment::merge(Enveronment* env) {
+    Enveronment* newEnv = new Enveronment;
+    Enveronment* p = env;
+    while(p) {
+
+        for(IterType it = p->names.begin(); it != p->names.end(); it++) {
+            if( newEnv->names.find(it->first) == newEnv->names.end() ) { // not found
+                newEnv->names[it->first] = it->second;
+            }
+        }
+        p = p->next;
+    }
+    return newEnv;
+}
+
 Value* Enveronment::get(std::string name) {
     IterType it = names.find(name);
     if(it == names.end()) 
@@ -29,6 +44,7 @@ Value* Enveronment::get(std::string name) {
 }
 
 void Enveronment::add(std::string name, Value* value) {
+    //std::cout << this << " , adding: " << name << " , value: " << value->tostring() << std::endl;
     names[name] = value;
 }
 
@@ -250,14 +266,25 @@ int NilValue::intValue() {
 Value* FuncValue::call(Enveronment* env) {
     BlockNode* blockNode = m_body->getBlock();
     if (blockNode->children_count() > 0){
+        if (m_env)
+        {
+            //插到第二位，跳过参数。参数是优先级最高的
+            Enveronment* temp = env->next;
+            env->next = m_env;
+            m_env->next = temp;
+        }
         return blockNode->eval(env);
     } else {
         return new StringValue("void");
     }
 
 }
-FuncValue::FuncValue(FuncBodyNode* body) {
+FuncValue::FuncValue(FuncBodyNode* body, Enveronment* env) {
     m_body = body;
+    if(env) {
+        m_env = Enveronment::merge(env);
+    } else
+        m_env = NULL;
 }
 FuncBodyNode* FuncValue::getBodyNode() {
     return m_body;

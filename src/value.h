@@ -11,9 +11,11 @@ class Enveronment {
     public:
         Enveronment();
 
+        static Enveronment* merge(Enveronment* env);
         std::map<std::string, Value*> names;
         typedef std::map<std::string, Value*>::iterator IterType;
         Enveronment* next;
+
 
         void add(std::string name, Value* value);
         bool update(std::string name, Value* value);
@@ -24,13 +26,13 @@ class Enveronment {
 class Value {
     public:
         typedef enum {
-            INT, 
-            DOUBLE, 
-            STRING, 
-            BOOL,
-            FUNC,
-            TABLE,
-            NIL,
+            INT = 100, 
+            DOUBLE = 200, 
+            STRING = 300, 
+            BOOL = 400,
+            FUNC = 500,
+            TABLE = 600,
+            NIL = 700,
             DUMMY
         } Type;
 
@@ -120,12 +122,13 @@ class NilValue : public Value {
 class FuncBodyNode;
 class FuncValue : public Value {
     public:
-        FuncValue(FuncBodyNode* body);
+        FuncValue(FuncBodyNode* body, Enveronment* env = NULL);
         FuncBodyNode* getBodyNode();
         Value* call(Enveronment* env);
 
     public:
         FuncBodyNode* m_body;
+        Enveronment* m_env;
         std::string tostring();
         virtual Type type();
         virtual bool eq(Value* other);
